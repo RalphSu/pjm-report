@@ -4,4 +4,7 @@
 
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
+  <listener>
+  	<listener-class>org.pjm2.report.ContextListener</listener-class>
+  </listener>
 </web-app>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persistence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+	version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">
+	<persistence-unit name="pjmUnit"
+		transaction-type="RESOURCE_LOCAL">
+
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+
+		<class>org.pjm2.report.db.model.ReportLine</class>
+		<class>org.pjm2.report.db.model.ReportTemplate</class>
+		<class>org.pjm2.report.db.model.ReportTask</class>
+
+		<properties>
+			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect" />
+			<property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver" />
+			<property name="hibernate.connection.username" value="chiliproject" />
+			<property name="hibernate.connection.password" value="chili" />
+			<property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/chiliproject" />
+			<property name="hibernate.max_fetch_depth" value="3" />
+			<property name="hibernate.connection.useUnicode" value="true" />
+			<property name="hibernate.connection.characterEncoding" value="UTF-8" />
+			<!--property name="hibernate.connection.pool_size" value="1" / -->
+			<!--property name="hibernate.proxool.pool_alias" value="pool1"/ -->
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.format_sql" value="true" />
+			<property name="hibernate.order_updates" value="true" />
+			<property name="hibernate.default_batch_fetch_size" value="100" />
+			<property name="hibernate.jdbc.batch_versioned_data" value="true" />
+			<property name="hibernate.jdbc.use_streams_for_binary"
+				value="true" />
+			<property name="hibernate.cache.region_prefix" value="hibernate.test" />
+			<property name="hibernate.cache.use_query_cache" value="true" />
+			<property name="hibernate.cache.provider_class" value="org.hibernate.cache.HashtableCacheProvider" />
+			<property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.ehcache.EhCacheRegionFactory" />
+			<property name="hibernate.query.substitutions" value="true 1, false 0, yes 'Y', no 'N'" />
+<!-- 			<property name="hibernate.connection.provider_class"
+				value="org.hibernate.connection.C3P0ConnectionProvider" />
+			<property name="hibernate.c3p0.min_size" value="5" />
+			<property name="hibernate.c3p0.max_size" value="20" />
+			<property name="hibernate.c3p0.timeout" value="300" />
+			<property name="hibernate.c3p0.max_statements" value="50" />
+			<property name="hibernate.c3p0.idle_test_period" value="3000" />
+ -->			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
+		</properties>
+
+	</persistence-unit>
+</persistence>
