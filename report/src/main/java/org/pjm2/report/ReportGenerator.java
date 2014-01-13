@@ -72,8 +72,8 @@ public class ReportGenerator {
 
 	private void slientWait() {
 		try {
-			// current no job, sleep for 5 minutes
-			Thread.sleep(1000 * 60 * 5);
+			// current no job, sleep for 10 minutes
+			Thread.sleep(1000 * 60 * 10);
 		} catch (InterruptedException e) {
 			logger.info("Generate wait!", e);
 		}

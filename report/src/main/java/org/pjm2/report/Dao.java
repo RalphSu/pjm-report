@@ -12,6 +12,7 @@ import javax.persistence.Persistence;
 import javax.persistence.Query;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.pjm2.report.db.model.ReportTask;
 import org.pjm2.report.db.model.ReportTask.Status;
 import org.pjm2.report.db.model.ReportTemplate;
@@ -96,6 +97,8 @@ public class Dao {
 		for(ReportTask t:tasks){
 			t.setProject_identifier(projects.get(t.getProjectId()));
 		}
+		
+		logger.info("Find " + tasks.size() + " tasks! :: " + ToStringBuilder.reflectionToString(tasks));
 		return tasks;
 	}
 
