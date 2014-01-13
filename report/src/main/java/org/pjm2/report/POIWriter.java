@@ -235,7 +235,7 @@ public class POIWriter {
 	}
 
 	private void save(XWPFDocument doc, ReportTask task) {
-		String identifier = task.getProject_identifier();
+		String identifier = task.getProjectName();
 		
 		FileOutputStream out = null;
 		try {

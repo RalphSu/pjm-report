@@ -87,7 +87,7 @@ public class Dao {
 			pId.add(task.getProjectId());
 		}
 		Map<Long, String> projects = new HashMap<Long, String>();
-		sql = "select id, identifier from projects where id in ( %s )";
+		sql = "select id, name from projects where id in ( %s )";
 		query = manager.createNativeQuery(String.format(sql, StringUtils.join(pId, ',')));
 		result = query.getResultList();
 		for (Object o : result) {
@@ -95,7 +95,7 @@ public class Dao {
 			projects.put(((Number) objs[0]).longValue(), objs[1].toString());
 		}
 		for(ReportTask t:tasks){
-			t.setProject_identifier(projects.get(t.getProjectId()));
+			t.setProjectName(projects.get(t.getProjectId()));
 		}
 		
 		logger.info("Find " + tasks.size() + " tasks! :: " + ToStringBuilder.reflectionToString(tasks));
@@ -121,7 +121,7 @@ public class Dao {
 	}
 	
 	public void save(Object entity) {
-		manager.persist(entity);
+		manager.merge(entity);
 	}
 
 }

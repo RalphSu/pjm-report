@@ -55,7 +55,7 @@ public class ReportTask {
 	private Integer gen_count;
 
 	@Transient
-	private String project_identifier;
+	private String projectName;
 	
 	public Long getId() {
 		return id;
@@ -137,12 +137,12 @@ public class ReportTask {
 		this.reportEndTime = reportEndTime;
 	}
 
-	public String getProject_identifier() {
-		return project_identifier;
+	public String getProjectName() {
+		return projectName;
 	}
 
-	public void setProject_identifier(String project_identifier) {
-		this.project_identifier = project_identifier;
+	public void setProjectName(String project_identifier) {
+		this.projectName = project_identifier;
 	}
 
     public Integer getGen_count() {

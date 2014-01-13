@@ -109,7 +109,7 @@ public class ReportGenerator {
 		public void run() {
 			try {
 				// mark start
-			    logger.info("start generation for task : " + task.getId() + "for project " + task.getProject_identifier());
+			    logger.info("start generation for task : " + task.getId() + "for project " + task.getProjectName());
 				task.setStatus(Status.inprogress.toString());
                 task.setGenStartTime(new Date());
 				dao.save(task);
@@ -129,9 +129,9 @@ public class ReportGenerator {
 	                task.setGenEndTime(new Date());
 					task.addGen_count();
 					dao.save(task);
-					logger.info("end generation for task : task id " + task.getId() + " . For project " + task.getProject_identifier() + ". File write at " + task.getReportPath());
+					logger.info("end generation for task : task id " + task.getId() + " . For project " + task.getProjectName() + ". File write at " + task.getReportPath());
 				} else {
-				    logger.info("end generation for task : Generation failed : " + task.getId() + " . For project " + task.getProject_identifier());
+				    logger.info("end generation for task : Generation failed : " + task.getId() + " . For project " + task.getProjectName());
                     task.setGenEndTime(new Date());
                     task.addGen_count();
                     dao.save(task);
