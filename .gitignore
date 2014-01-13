@@ -3,3 +3,4 @@ report/.project
 report/.classpath
 report/.settings
 report/*.log
+*.orig
