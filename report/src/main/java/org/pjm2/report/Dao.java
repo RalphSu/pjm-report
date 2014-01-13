@@ -74,7 +74,7 @@ public class Dao {
 
 	@SuppressWarnings("unchecked")
 	public List<ReportTask> findTODOTasks() {
-		String sql = "select * report_tasks where status in ('%s', '%s') and gen_count <= %d ";
+		String sql = "select * from report_tasks where status in ('%s', '%s') and ( gen_count IS NULL or gen_count <= %d )";
         sql = String.format(sql, Status.planned, Status.inprogress, MAX_GENERATION_COUNT);
 		Query query = manager.createNativeQuery(sql, ReportTask.class);
 		List<?> result = query.getResultList();
