@@ -4,6 +4,7 @@
 package org.pjm2.report;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class ReportGenerator {
 
 	private static final Logger logger = LoggerFactory.getLogger(ReportGenerator.class);
 	private volatile boolean stop = false;
-	private final Dao dao = new Dao();
+	private final Dao dao;
 
 	// daemon thread factory
 	private static class DaemonThreadFactory implements ThreadFactory {
@@ -49,6 +50,11 @@ public class ReportGenerator {
 
 	private ExecutorService executors = Executors.newCachedThreadPool(new DaemonThreadFactory());
 	private ConcurrentHashMap<Long, Job> runningTaskId = new ConcurrentHashMap<Long, Job>();
+
+    public ReportGenerator() {
+        dao = new Dao();
+        dao.init();
+    }
 
 	public void startLoop() {
 		stop = false;
@@ -103,7 +109,9 @@ public class ReportGenerator {
 		public void run() {
 			try {
 				// mark start
+			    logger.info("start generation for task : " + task.getId() + "for project " + task.getProject_identifier());
 				task.setStatus(Status.inprogress.toString());
+                task.setGenStartTime(new Date());
 				dao.save(task);
 
 				// on-progress
@@ -118,7 +126,15 @@ public class ReportGenerator {
 				if (writeToFile(allReportData)) {
 					// mark end
 					task.setStatus(Status.generated.toString());
+	                task.setGenEndTime(new Date());
+					task.addGen_count();
 					dao.save(task);
+					logger.info("end generation for task : " + task.getId() + "for project " + task.getProject_identifier() + ". File write at " + task.getReportPath());
+				} else {
+				    logger.info("end generation for task : Generation failed : " + task.getId() + "for project " + task.getProject_identifier());
+                    task.setGenEndTime(new Date());
+                    task.addGen_count();
+                    dao.save(task);
 				}
 			} catch (Exception e) {
 				logger.error("Generation failed!", e);

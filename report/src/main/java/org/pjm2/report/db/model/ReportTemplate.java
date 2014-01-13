@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name = "report_tasks")
@@ -30,6 +31,7 @@ public class ReportTemplate {
 	@Column(name = "updated_at")
 	private Date updatedAt;
 
+	@Transient
 	private List<String> columnHeaders = new ArrayList<String>();
 
 	public Long getId() {

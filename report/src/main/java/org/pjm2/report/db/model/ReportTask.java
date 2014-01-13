@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name = "report_tasks")
@@ -50,9 +51,10 @@ public class ReportTask {
 	@Column(name = "report_path")
 	private String reportPath;
 	
-	@Column(name = "last_status")
-	private String last_status;
+	@Column(name="gen_count")
+	private Integer gen_count;
 
+	@Transient
 	private String project_identifier;
 	
 	public Long getId() {
@@ -135,14 +137,6 @@ public class ReportTask {
 		this.reportEndTime = reportEndTime;
 	}
 
-	public String getLast_status() {
-		return last_status;
-	}
-
-	public void setLast_status(String last_status) {
-		this.last_status = last_status;
-	}
-
 	public String getProject_identifier() {
 		return project_identifier;
 	}
@@ -150,5 +144,21 @@ public class ReportTask {
 	public void setProject_identifier(String project_identifier) {
 		this.project_identifier = project_identifier;
 	}
+
+    public Integer getGen_count() {
+        return gen_count;
+    }
+
+    public void setGen_count(Integer gen_count) {
+        this.gen_count = gen_count;
+    }
+    
+    public void addGen_count() {
+        if (this.gen_count == null) {
+            this.gen_count = 1;
+        } else  {
+            this.gen_count++;
+        }
+    }
 
 }

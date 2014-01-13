@@ -13,7 +13,8 @@ import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 public class POIWriteTest extends TestCase {
 
-	public void testWriteWord() throws IOException, InvalidFormatException {
+	@SuppressWarnings("unused")
+    public void testWriteWord() throws IOException, InvalidFormatException {
 		POIWriter writer = new POIWriter();
 		writer.writeTest();
 		

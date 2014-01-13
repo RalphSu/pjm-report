@@ -27,7 +27,7 @@ public class TestEntityLoad extends TestCase {
 			Map<String, String> props = new HashMap<String, String>();
 			props.put(Environment.USER, "chiliproject");
 			props.put(Environment.PASS, "chili");
-			props.put(Environment.URL, "jdbc:mysql://192.168.1.6:3306/chiliproject");
+			props.put(Environment.URL, "jdbc:mysql://d-shc-liasu.corp.ebay.com:3306/chiliproject");
 			EntityManagerFactory sf = Persistence.createEntityManagerFactory("pjmUnit", props);
 			EntityManager manager = sf.createEntityManager();
 			dao.setEntityManager(manager);
@@ -44,6 +44,10 @@ public class TestEntityLoad extends TestCase {
 		t.setClassified("微博推广");
 //		t.setClassified("新闻稿推广");
 		dao.findReportLine(t, 7, new Date(), new Date());
+	}
+	
+	public void findTODOTasks() {
+	    dao.findTODOTasks();
 	}
 
 }
