@@ -4,6 +4,7 @@
 package org.pjm2.report;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +61,7 @@ public class ReportGenerator {
 		stop = false;
 
 		while (!stop) {
-			List<Job> jobs = getJob();
+			List<Job> jobs = getJobs();
 			// submit jobs
 			for (Job job : jobs) {
 				runningTaskId.put(job.task.getId(), job);
@@ -79,13 +80,18 @@ public class ReportGenerator {
 		}
 	}
 
-	private List<Job> getJob() {
+	private List<Job> getJobs() {
+		try {
 		List<ReportTask> tasks = dao.findTODOTasks();
 		List<Job> jobs = new ArrayList<ReportGenerator.Job>();
 		for (ReportTask task : tasks) {
 			jobs.add(new Job(task));
 		}
 		return jobs;
+		} catch (Exception e) {
+			logger.error("failed to find tasks!", e);
+			return Collections.emptyList();
+		}
 	}
 
 	public void stopLoop() {
