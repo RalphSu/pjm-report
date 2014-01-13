@@ -3,6 +3,7 @@
  */
 package org.pjm2.report;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,6 +31,8 @@ import org.pjm2.report.db.model.ReportTemplate;
 import org.pjm2.report.model.ReportLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.core.util.FileUtil;
 
 
 /**
@@ -233,9 +236,13 @@ public class POIWriter {
 
 	private void save(XWPFDocument doc, ReportTask task) {
 		String identifier = task.getProject_identifier();
+		
 		FileOutputStream out = null;
 		try {
-			String path = "./" + identifier + "/" + task.getId() + ".docx";
+			String path = "~/reports/" + identifier + "/" + task.getId() + ".docx";
+			// check parent directory
+			FileUtil.createMissingParentDirectories(new File(path));
+
 			out = new FileOutputStream(path);
 			doc.write(out);
 			out.flush();

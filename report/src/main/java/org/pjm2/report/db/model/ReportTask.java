@@ -19,7 +19,7 @@ public class ReportTask {
 		inprogress,
 		generated,
 		reviewed,
-		complete;
+		published;
 	}
 
 	@Id
