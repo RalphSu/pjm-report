@@ -48,7 +48,7 @@ public class ReportGenerator {
 		}
 	}
 
-	private ExecutorService executors = Executors.newCachedThreadPool(new DaemonThreadFactory());
+	private ExecutorService executors = Executors.newFixedThreadPool(10, new DaemonThreadFactory());
 	private ConcurrentHashMap<Long, Job> runningTaskId = new ConcurrentHashMap<Long, Job>();
 
     public ReportGenerator() {

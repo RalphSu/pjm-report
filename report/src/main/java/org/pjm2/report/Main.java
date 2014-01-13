@@ -18,7 +18,7 @@ public class Main {
 		generator.startLoop();
 		while(true) {
 			try {
-				Thread.sleep(5000l);
+				Thread.sleep(5000 * 50l);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 				logger.error("Report thread waiting interrupted, ignore this waiting and wait again.", e);

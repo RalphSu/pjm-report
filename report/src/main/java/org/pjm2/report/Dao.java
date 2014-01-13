@@ -33,6 +33,7 @@ public class Dao {
 	private static final String WEIBO_TEMPLATE_TYPE = "微博类模板";
 	private static final String BLOG_TEMPLATE_TYPE = "博客类模板";
 	private static final String FORUM_TEMPLATE_TYPE = "论坛类模板";
+	private static final Integer MAX_GENERATION_COUNT = 6;
 
 	private static Logger logger = LoggerFactory.getLogger(Dao.class);
 
@@ -73,8 +74,8 @@ public class Dao {
 
 	@SuppressWarnings("unchecked")
 	public List<ReportTask> findTODOTasks() {
-		String sql = "select * report_tasks where status in ('%s', '%s')";
-        sql = String.format(sql, Status.planned, Status.inprogress);
+		String sql = "select * report_tasks where status in ('%s', '%s') and gen_count <= %d ";
+        sql = String.format(sql, Status.planned, Status.inprogress, MAX_GENERATION_COUNT);
 		Query query = manager.createNativeQuery(sql, ReportTask.class);
 		List<?> result = query.getResultList();
 		List<ReportTask> tasks = (List<ReportTask>) result;
