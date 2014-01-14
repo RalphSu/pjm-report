@@ -135,7 +135,7 @@ public class ReportGenerator {
 	                task.setGenEndTime(new Date());
 					task.addGen_count();
 					dao.save(task);
-					logger.info("end generation for task : task id " + task.getId() + " . For project " + task.getProjectName() + ". File write at " + task.getReportPath());
+					logger.info("end generation for task : task id " + task.getId() + " . For project " + task.getProjectName() + ". File write at $PJM_HOME/" + task.getGen_path());
 				} else {
 				    logger.info("end generation for task : Generation failed : " + task.getId() + " . For project " + task.getProjectName());
                     task.setGenEndTime(new Date());

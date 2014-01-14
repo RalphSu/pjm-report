@@ -79,13 +79,18 @@ public class ReportPOIWriter {
 		
 		FileOutputStream out = null;
 		try {
-			String prefix = System.getenv("HOME");
-			String path = prefix + "/reports/" + identifier + "/";
-			// check parent directory
-			FileUtils.forceMkdir(new File(path));
-			
+			String prefix = System.getenv("PJM_HOME");
+			if (prefix == null) {
+			    prefix = System.getProperty("PJM_HOME");
+			}
+			String path = "/reports/" + identifier + "/";
 			String file = path + task.getId() + ".docx";
-			out = new FileOutputStream(file);
+
+			// check parent directory
+			String parent = prefix + path;
+			FileUtils.forceMkdir(new File(parent));
+
+            out = new FileOutputStream(prefix + file);
 			doc.write(out);
 			out.flush();
             task.setGen_path(file);
