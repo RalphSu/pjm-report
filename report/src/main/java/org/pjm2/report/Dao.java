@@ -8,7 +8,10 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
+import javax.persistence.OptimisticLockException;
 import javax.persistence.Persistence;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
 import org.apache.commons.lang3.StringUtils;
@@ -38,25 +41,26 @@ public class Dao {
 
 	private static Logger logger = LoggerFactory.getLogger(Dao.class);
 
-	public static EntityManager buildSessionFactory(Map<String, String> props) {
+	public EntityManagerFactory buildSessionFactory(Map<String, String> props) {
 		try {
 			EntityManagerFactory sf = Persistence.createEntityManagerFactory("pjmUnit", props);
-			return sf.createEntityManager();
+			return sf;
 		} catch (Exception e) {
 			logger.error("Failed to load connection!", e);
 			throw new RuntimeException(e);
 		}
 	}
 
-	private EntityManager manager;
+	private EntityManagerFactory managerFactory;
 	private final Map<String, IEntityDao> daos = new HashMap<String, IEntityDao>();
 
 	public void init() {
-		manager = buildSessionFactory(new HashMap<String, String>());
+		managerFactory = buildSessionFactory(new HashMap<String, String>());
 		initDaos();
 	}
 
 	private void initDaos() {
+		EntityManager manager = this.managerFactory.createEntityManager();
 		IEntityDao dao = new NewsDao(manager);
 		daos.put(NEWS_TEMPLATE_TYPE, dao);
 		dao = new BlogDao(manager);
@@ -68,8 +72,8 @@ public class Dao {
 	}
 	
 	// for test only
-	public void setEntityManager(EntityManager mgr) {
-		this.manager = mgr;
+	public void setEntityManagerFactory(EntityManagerFactory mgrfct) {
+		this.managerFactory = mgrfct;
 		initDaos();
 	}
 
@@ -77,6 +81,7 @@ public class Dao {
 	public List<ReportTask> findTODOTasks() {
 		String sql = "select * from report_tasks where status in ('%s', '%s') and ( gen_count IS NULL or gen_count <= %d )";
         sql = String.format(sql, Status.planned, Status.inprogress, MAX_GENERATION_COUNT);
+        EntityManager manager = managerFactory.createEntityManager();
 		Query query = manager.createNativeQuery(sql, ReportTask.class);
 		List<?> result = query.getResultList();
 		List<ReportTask> tasks = (List<ReportTask>) result;
@@ -105,6 +110,7 @@ public class Dao {
 	@SuppressWarnings("unchecked")
 	public List<ReportTemplate> findReportTemplates(Long project_id) {
 		String sql = "select * from report_templates where project_id = " + project_id;
+		EntityManager manager = managerFactory.createEntityManager();
 		Query query = manager.createNativeQuery(sql, ReportTemplate.class);
 		List<?> result = query.getResultList();
 		return (List<ReportTemplate>) result;
@@ -121,7 +127,33 @@ public class Dao {
 	}
 	
 	public void save(Object entity) {
-		manager.merge(entity);
+		EntityManager manager = managerFactory.createEntityManager();
+		EntityTransaction tx = manager.getTransaction();
+		try{
+			tx.begin();
+			manager.merge(entity);
+			tx.commit();
+		}catch (PersistenceException e) {
+			logger.error("error in update",e);
+			if(e instanceof OptimisticLockException)
+				throw new RuntimeException("Your data is not newest, someone else change it already ,please reselect and update");
+			else 
+				throw new RuntimeException(e.getCause().getMessage());
+		}catch (Throwable t) {
+			logger.error("error in update",t);
+			throw new RuntimeException(t.getMessage());
+		}
+		finally {
+			try {
+				if (tx.isActive())
+					tx.rollback();
+				manager.close();
+			} catch (Exception e) {
+				logger.error("error in update,Could not close entitymanager",e);
+			}
+			
+		}
+		
 	}
 
 }

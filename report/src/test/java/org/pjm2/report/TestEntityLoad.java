@@ -29,8 +29,8 @@ public class TestEntityLoad extends TestCase {
 			props.put(Environment.PASS, "chili");
 			props.put(Environment.URL, "jdbc:mysql://d-shc-liasu.corp.ebay.com:3306/chiliproject");
 			EntityManagerFactory sf = Persistence.createEntityManagerFactory("pjmUnit", props);
-			EntityManager manager = sf.createEntityManager();
-			dao.setEntityManager(manager);
+			
+			dao.setEntityManager(sf);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
