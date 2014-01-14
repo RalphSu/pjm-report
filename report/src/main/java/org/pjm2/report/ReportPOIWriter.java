@@ -88,7 +88,7 @@ public class ReportPOIWriter {
 			out = new FileOutputStream(file);
 			doc.write(out);
 			out.flush();
-			task.setReportPath(file);
+            task.setGen_path(file);
 		} catch (FileNotFoundException e) {
 			logger.error("Can not open doc file for write!", e);
 			throw new RuntimeException(e);

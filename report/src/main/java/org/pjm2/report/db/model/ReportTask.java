@@ -29,8 +29,11 @@ public class ReportTask {
 	@Column(name = "project_id")
 	private Long projectId;
 
-	@Column
-	private String status;
+    @Column
+    private String  status;
+
+    @Column
+    private String  type;
 
 	@Column(name = "gen_start_time")
 	private Date genStartTime;
@@ -53,6 +56,12 @@ public class ReportTask {
 	
 	@Column(name="gen_count")
 	private Integer gen_count;
+	
+	@Column(name="gen_path")
+    private String gen_path;
+	
+	@Column(name="reviewed_path")
+    private String reviewed_path;
 
 	@Transient
 	private String projectName;
@@ -159,6 +168,22 @@ public class ReportTask {
         } else  {
             this.gen_count++;
         }
+    }
+
+    public String getGen_path() {
+        return gen_path;
+    }
+
+    public void setGen_path(String gen_path) {
+        this.gen_path = gen_path;
+    }
+
+    public String getReviewed_path() {
+        return reviewed_path;
+    }
+
+    public void setReviewed_path(String reviewed_path) {
+        this.reviewed_path = reviewed_path;
     }
 
 }

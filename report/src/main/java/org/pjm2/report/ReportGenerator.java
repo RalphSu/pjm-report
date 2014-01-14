@@ -74,21 +74,21 @@ public class ReportGenerator {
 	private void slientWait() {
 		try {
 			// current no job, sleep for 10 minutes
-			Thread.sleep(1000 * 60 * 10);
+			Thread.sleep(1000 * 60 * 5);
 		} catch (InterruptedException e) {
 			logger.info("Generate wait!", e);
 		}
 	}
 
 	private List<Job> getJobs() {
-		try {
-		List<ReportTask> tasks = dao.findTODOTasks();
-		List<Job> jobs = new ArrayList<ReportGenerator.Job>();
-		for (ReportTask task : tasks) {
-			jobs.add(new Job(task));
-		}
-		return jobs;
-		} catch (Exception e) {
+        try {
+            List<ReportTask> tasks = dao.findTODOTasks();
+            List<Job> jobs = new ArrayList<ReportGenerator.Job>();
+            for (ReportTask task : tasks) {
+                jobs.add(new Job(task));
+            }
+            return jobs;
+        } catch (Exception e) {
 			logger.error("failed to find tasks!", e);
 			return Collections.emptyList();
 		}

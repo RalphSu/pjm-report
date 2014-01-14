@@ -87,21 +87,23 @@ public class Dao {
 		List<ReportTask> tasks = (List<ReportTask>) result;
 		
 		// fill project identifier
-		List<Long> pId = new ArrayList<Long>();
-		for (ReportTask task : tasks) {
-			pId.add(task.getProjectId());
-		}
-		Map<Long, String> projects = new HashMap<Long, String>();
-		sql = "select id, name from projects where id in ( %s )";
-		query = manager.createNativeQuery(String.format(sql, StringUtils.join(pId, ',')));
-		result = query.getResultList();
-		for (Object o : result) {
-			Object[] objs = (Object[])o;
-			projects.put(((Number) objs[0]).longValue(), objs[1].toString());
-		}
-		for(ReportTask t:tasks){
-			t.setProjectName(projects.get(t.getProjectId()));
-		}
+        if (!tasks.isEmpty()) {
+            List<Long> pId = new ArrayList<Long>();
+            for (ReportTask task : tasks) {
+                pId.add(task.getProjectId());
+            }
+            Map<Long, String> projects = new HashMap<Long, String>();
+            sql = "select id, name from projects where id in ( %s )";
+            query = manager.createNativeQuery(String.format(sql, StringUtils.join(pId, ',')));
+            result = query.getResultList();
+            for (Object o : result) {
+                Object[] objs = (Object[]) o;
+                projects.put(((Number) objs[0]).longValue(), objs[1].toString());
+            }
+            for (ReportTask t : tasks) {
+                t.setProjectName(projects.get(t.getProjectId()));
+            }
+        }
 		
 		logger.info("Find " + tasks.size() + " tasks! :: " + ToStringBuilder.reflectionToString(tasks));
 		return tasks;
