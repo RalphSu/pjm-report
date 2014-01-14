@@ -30,7 +30,7 @@ public class TestEntityLoad extends TestCase {
 			props.put(Environment.URL, "jdbc:mysql://d-shc-liasu.corp.ebay.com:3306/chiliproject");
 			EntityManagerFactory sf = Persistence.createEntityManagerFactory("pjmUnit", props);
 			
-			dao.setEntityManager(sf);
+			dao.setEntityManagerFactory(sf);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
