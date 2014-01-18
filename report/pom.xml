@@ -23,11 +23,8 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.5</version>
 		</dependency>
-<!-- 		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-c3p0</artifactId>
-			<version>4.3.0.Final</version>
-		</dependency> -->
+		<!-- <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-c3p0</artifactId> 
+			<version>4.3.0.Final</version> </dependency> -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
@@ -48,21 +45,21 @@
 			<artifactId>hibernate-ehcache</artifactId>
 			<version>4.3.0.Final</version>
 		</dependency>
-		<dependency>  
-		    <groupId>org.apache.poi</groupId>  
-		    <artifactId>poi-ooxml</artifactId>  
-		    <version>3.9</version>  
-		</dependency>  
-		<dependency>  
-		    <groupId>org.apache.poi</groupId>  
-		    <artifactId>poi-ooxml-schemas</artifactId>  
-		    <version>3.9</version>  
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>3.9</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml-schemas</artifactId>
+			<version>3.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-scratchpad</artifactId>
 			<version>3.9</version>
-		</dependency>  
+		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -84,7 +81,7 @@
 			<version>4.3.0.Final</version>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<finalName>report</finalName>
 		<plugins>
@@ -94,7 +91,7 @@
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
-					<encoding>utf8</encoding>   
+					<encoding>utf8</encoding>
 				</configuration>
 			</plugin>
 
@@ -109,7 +106,17 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-						<createDependencyReducedPom>false</createDependencyReducedPom>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
