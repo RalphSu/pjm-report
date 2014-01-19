@@ -7,7 +7,9 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.RenderingHints;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -87,6 +89,8 @@ public class ReportPOIWriter {
 	private static final Logger logger = LoggerFactory.getLogger(ReportPOIWriter.class);
 	private Dao dao;
 	private ReportTask task;
+	private static final int CHART_WIDTH=400;
+	private static final int CHART_HEIGHT=280;
 
 
 
@@ -109,11 +113,11 @@ public class ReportPOIWriter {
 			title.setTextPosition(25);
 			title.setText(String.format("报表 - %s : 从 %s 到  %s ", task.getProjectName(), task.getReportStartTime(), task.getReportEndTime()));
 
-			Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = shuffle(reportData);
-			for (Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e : sortedData.entrySet()) {
-				writeTemplateType(doc, e);
-			}
-			writeImageAnaylysis(reportData);
+//			Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = shuffle(reportData);
+//			for (Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e : sortedData.entrySet()) {
+//				writeTemplateType(doc, e);
+//			}
+			writeImageAnaylysis(doc,reportData);
 			save(doc);
 		} catch (Exception e) {
 			logger.error("Fail to write the template!", e);
@@ -124,7 +128,9 @@ public class ReportPOIWriter {
 	
 	
 	private String getReportFilePath(){
-		String prefix = System.getenv("HOME");
+		String prefix = System.getenv("PJM_HOME");
+		if(prefix==null)
+			prefix = System.getProperty("PJM_HOME");
 		String path = prefix + "/reports/" + this.task.getProjectName() + "/";
 		// check parent directory
 		try{
@@ -181,21 +187,56 @@ public class ReportPOIWriter {
 		
 	}
 	
-	public void writeImageAnaylysis( Map<ReportTemplate, List<ReportLine>> reportData) {
+	public void writeImageAnaylysis( CustomXWPFDocument doc, Map<ReportTemplate, List<ReportLine>> reportData) {
 		
 		String trendCountFileName = createTrendCountFile(reportData.keySet());
+		try{
+			FileInputStream fis=new FileInputStream(trendCountFileName);
+			doc.addPictureData(fis,  XWPFDocument.PICTURE_TYPE_PNG);	
+			 doc.createPicture(doc.getAllPictures().size()-1, CHART_WIDTH, CHART_HEIGHT);  
+		}catch(Throwable t){
+			logger.error("write trendCountFileName ",t);
+		}
 		
 		String distroPieChartFileName = createDistroPieChartFileName(reportData);
+		try{
+			FileInputStream fis=new FileInputStream(distroPieChartFileName);
+			doc.addPictureData(fis,  XWPFDocument.PICTURE_TYPE_PNG);	
+			doc.createPicture(doc.getAllPictures().size()-1, CHART_WIDTH, CHART_HEIGHT);
+		}catch(Throwable t){
+			logger.error("write distroPieChartFileName ",t);
+		}
 	
 		String videoPieChartFileName = createVideoPieChartFileName(reportData);
+		try{
+			FileInputStream fis=new FileInputStream(videoPieChartFileName);
+			doc.addPictureData(fis,  XWPFDocument.PICTURE_TYPE_PNG);	
+			doc.createPicture(doc.getAllPictures().size()-1, CHART_WIDTH, CHART_HEIGHT);
+		}catch(Throwable t){
+			logger.error("write distroPieChartFileName ",t);
+		}
 		
 		//FIXME 4.	网络关注情况分布
 		
 		//5.	网络新闻信息每日舆情走势
 		String newsTrendCountFileName = createNewsTrendCountFile(reportData.keySet());
+		try{
+			FileInputStream fis=new FileInputStream(newsTrendCountFileName);
+			doc.addPictureData(fis,  XWPFDocument.PICTURE_TYPE_PNG);	
+			doc.createPicture(doc.getAllPictures().size()-1, CHART_WIDTH, CHART_HEIGHT);
+		}catch(Throwable t){
+			logger.error("write newsTrendCountFileName ",t);
+		}
 		
 		//
 		String newsPlatformDistro = createNewsPlatformDistro(reportData);
+		try{
+			FileInputStream fis=new FileInputStream(newsPlatformDistro);
+			doc.addPictureData(fis,  XWPFDocument.PICTURE_TYPE_PNG);	
+			doc.createPicture(doc.getAllPictures().size()-1, CHART_WIDTH, CHART_HEIGHT);
+		}catch(Throwable t){
+			logger.error("write newsPlatformDistro ",t);
+		}
 	}
 	
     private String createNewsPlatformDistro(
@@ -684,7 +725,7 @@ public class ReportPOIWriter {
         	
     	}
     	
-    	writer.writeImageAnaylysis(reportData);
+    	writer.write(reportData);
     	
 	}
     
