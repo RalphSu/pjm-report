@@ -74,21 +74,21 @@ public class ReportGenerator {
 	private void slientWait() {
 		try {
 			// current no job, sleep for 10 minutes
-			Thread.sleep(1000 * 60 * 10);
+			Thread.sleep(1000 * 60 * 5);
 		} catch (InterruptedException e) {
 			logger.info("Generate wait!", e);
 		}
 	}
 
 	private List<Job> getJobs() {
-		try {
-		List<ReportTask> tasks = dao.findTODOTasks();
-		List<Job> jobs = new ArrayList<ReportGenerator.Job>();
-		for (ReportTask task : tasks) {
-			jobs.add(new Job(task));
-		}
-		return jobs;
-		} catch (Exception e) {
+        try {
+            List<ReportTask> tasks = dao.findTODOTasks();
+            List<Job> jobs = new ArrayList<ReportGenerator.Job>();
+            for (ReportTask task : tasks) {
+                jobs.add(new Job(task));
+            }
+            return jobs;
+        } catch (Exception e) {
 			logger.error("failed to find tasks!", e);
 			return Collections.emptyList();
 		}
@@ -135,7 +135,7 @@ public class ReportGenerator {
 	                task.setGenEndTime(new Date());
 					task.addGen_count();
 					dao.save(task);
-					logger.info("end generation for task : task id " + task.getId() + " . For project " + task.getProjectName() + ". File write at " + task.getReportPath());
+					logger.info("end generation for task : task id " + task.getId() + " . For project " + task.getProjectName() + ". File write at $PJM_HOME/" + task.getGen_path());
 				} else {
 				    logger.info("end generation for task : Generation failed : " + task.getId() + " . For project " + task.getProjectName());
                     task.setGenEndTime(new Date());

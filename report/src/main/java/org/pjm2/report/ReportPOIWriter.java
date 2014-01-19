@@ -101,7 +101,7 @@ public class ReportPOIWriter {
 			title.setFontSize(25);
 			title.setFontFamily("Courier");
 			title.setTextPosition(25);
-			title.setText(String.format("报表 - %s : 从 %s 到  %s ", task.getProjectName(), task.getReportStartTime(), task.getReportEndTime()));
+			title.setText(String.format("报表 - %s : �%s � %s ", task.getProjectName(), task.getReportStartTime(), task.getReportEndTime()));
 
 			Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = shuffle(reportData);
 			for (Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e : sortedData.entrySet()) {
@@ -136,12 +136,11 @@ public class ReportPOIWriter {
 		FileOutputStream out = null;
 		try {
 			String path = getReportFilePath();
-			
 			String file = path + task.getId() + ".docx";
 			out = new FileOutputStream(file);
 			doc.write(out);
 			out.flush();
-			task.setReportPath(file);
+            task.setGen_path(file);
 		} catch (FileNotFoundException e) {
 			logger.error("Can not open doc file for write!", e);
 			throw new RuntimeException(e);
@@ -261,34 +260,34 @@ public class ReportPOIWriter {
     	}
     	
     	JFreeChart chart = ChartFactory.createBarChart(
-    			"新闻发布平台分布图", // 图表标题
+    			"新闻发布平台分布", // 图表标题
     			"新闻发布平台", // 目录轴的显示标签
-    			"信息量", // 数值轴的显示标签
-    			mDataset, // 数据集
-    			PlotOrientation.VERTICAL , // 图表方向：垂直
+    			"信息", // 数值轴的显示标"
+    			mDataset, // 数据
+    			PlotOrientation.VERTICAL , // 图表方向：垂�    			
     			false, // 是否显示图例(对于简单的柱状图必须是false)
     			false, // 是否生成工具
     			false // 是否生成URL链接
     			); 
     	 Font font = new Font("", Font.BOLD, 14);  
-         chart.setTitle(getTextTile("新闻发布平台分布图"));
+         chart.setTitle(getTextTile("新闻发布平台分布"));
          
     	chart.setBackgroundPaint(Color.WHITE);   
          CategoryPlot categoryplot = (CategoryPlot) chart.getPlot();   
          categoryplot.setBackgroundPaint(Color.WHITE);   
          categoryplot.setDomainGridlinePaint(Color.white);   
          categoryplot.setDomainGridlinesVisible(true);   
-         //x轴  
+         //x� 
          CategoryAxis mDomainAxis = categoryplot.getDomainAxis();  
          //设置x轴标题的字体  
          mDomainAxis.setLabelFont(new Font("宋体", Font.PLAIN, 15));  
-         //设置x轴坐标字体  
+         //设置x轴坐标字� 
          mDomainAxis.setTickLabelFont(new Font("宋体", Font.PLAIN, 15));  
-         //y轴  
+         //y� 
          ValueAxis mValueAxis = categoryplot.getRangeAxis();  
-         //设置y轴标题字体  
+         //设置y轴标题字� 
          mValueAxis.setLabelFont(new Font("宋体", Font.PLAIN, 15));  
-         //设置y轴坐标字体  
+         //设置y轴坐标字� 
          mValueAxis.setTickLabelFont(new Font("宋体", Font.PLAIN, 15));  
          categoryplot.setRangeGridlinePaint(Color.white);   
          return chartToFile(chart, "platformdistro");
@@ -302,7 +301,7 @@ public class ReportPOIWriter {
 				newsReportTemplate.add(reportTemplate);
 			}
 		}
-		//截止报告生成日前每日舆情走势，类似图标1.但纵坐标只统计新闻类的信息量
+		//截止报告生成日前每日舆情走势，类似图.但纵坐标只统计新闻类的信息量
 		TimeSeriesCollection timeSeriesCollection = getTimeSeriesCollection(newsReportTemplate);
 		JFreeChart chart = createChartPress(timeSeriesCollection, "网络新闻信息日走势");  
 		return chartToFile(chart, "news_trend");
@@ -470,25 +469,25 @@ public class ReportPOIWriter {
         xyplot.setBackgroundPaint(new Color(255, 255, 255));  
         
         ValueAxis vaxis = xyplot.getDomainAxis();  
-        vaxis.setAxisLineStroke(new BasicStroke(1.0f)); // 坐标轴粗细  
-        vaxis.setAxisLinePaint(new Color(10, 10, 10)); // 坐标轴颜色  
+        vaxis.setAxisLineStroke(new BasicStroke(1.0f)); // 坐标轴粗� 
+        vaxis.setAxisLinePaint(new Color(10, 10, 10)); // 坐标轴颜� 
         
-        vaxis.setLabelPaint(new Color(10, 10, 10)); // 坐标轴标题颜色  
-        vaxis.setLowerMargin(0.06d);// 分类轴下（左）边距  
-        vaxis.setUpperMargin(0.14d);// 分类轴下（右）边距,防止最后边的一个数据靠近了坐标轴。  
+        vaxis.setLabelPaint(new Color(10, 10, 10)); // 坐标轴标题颜� 
+        vaxis.setLowerMargin(0.06d);// 分类轴下（左）边� 
+        vaxis.setUpperMargin(0.14d);// 分类轴下（右）边�防止最后边的一个数据靠近了坐标轴� 
           
         //X轴为日期格式，这里是专门的处理日期的类，  
         SimpleDateFormat format = new SimpleDateFormat("MM/dd");  
         DateAxis dateaxis = (DateAxis) xyplot.getDomainAxis();  
         dateaxis.setTickUnit(new DateTickUnit(DateTickUnit.DAY, 1, format));  
-        dateaxis.setVerticalTickLabels(true); // 设为true表示横坐标旋转到垂直。  
+        dateaxis.setVerticalTickLabels(true); // 设为true表示横坐标旋转到垂直� 
         dateaxis.setTickMarkPosition(DateTickMarkPosition.START);  
  
         ValueAxis valueAxis = xyplot.getRangeAxis();  
         valueAxis.setAutoRange(true);
-        valueAxis.setAxisLineStroke(new BasicStroke(1.0f)); // 坐标轴粗细  
-        valueAxis.setAxisLinePaint(new Color(10,10, 10)); // 坐标轴颜色  
-        valueAxis.setLabelPaint(new Color(10, 10, 10)); // 坐标轴标题颜色  
+        valueAxis.setAxisLineStroke(new BasicStroke(1.0f)); // 坐标轴粗� 
+        valueAxis.setAxisLinePaint(new Color(10,10, 10)); // 坐标轴颜� 
+        valueAxis.setLabelPaint(new Color(10, 10, 10)); // 坐标轴标题颜� 
         (( NumberAxis)valueAxis).setAutoRangeStickyZero(true);
         (( NumberAxis)valueAxis).setStandardTickUnits(NumberAxis.createIntegerTickUnits());
         
@@ -499,7 +498,7 @@ public class ReportPOIWriter {
         
         
         
-        xyplot.setNoDataMessageFont(new Font("", Font.BOLD, 14));//字体的大小，粗体。  
+        xyplot.setNoDataMessageFont(new Font("", Font.BOLD, 14));//字体的大小，粗体� 
         xyplot.setNoDataMessagePaint(new Color(87, 149, 117));//字体颜色  
         xyplot.setAxisOffset(new RectangleInsets(0d, 0d, 0d, 5d)); //  
  
@@ -526,7 +525,7 @@ public class ReportPOIWriter {
     } 
     
 	private TextTitle getTextTile(String title){
-		   // 设置标题的颜色  
+		   // 设置标题的颜� 
         TextTitle text = new TextTitle(title);  
         text.setPaint(new Color(255, 255, 255));
         text.setBackgroundPaint(new Color(0,112,192));
@@ -564,8 +563,7 @@ public class ReportPOIWriter {
 		CTTblWidth width = table.getCTTbl().addNewTblPr().addNewTblW();
 		width.setType(STTblWidth.DXA);
 		width.setW(BigInteger.valueOf(9072));
-		// 设置上下左右四个方向的距离，可以将表格撑大
-		table.setCellMargins(20, 20, 20, 20);
+		// 设置上下左右四个方向的距离，可以将表格撑�		table.setCellMargins(20, 20, 20, 20);
 		XWPFTableRow headRow = table.getRow(0);
 		List<XWPFTableCell> headerCells = headRow.getTableCells();
 		for (int i = 0; i < headers.size(); i++) {
