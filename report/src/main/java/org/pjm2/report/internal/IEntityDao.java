@@ -15,5 +15,7 @@ import org.pjm2.report.model.ReportLine;
 public interface IEntityDao {
 
 	public List<ReportLine> findReportLine(ReportTemplate template, long pid, Date starTime, Date endTime);
+	
+//	public int countReportData(ReportTemplate template, long pid, Date startTime, Date endTime);
 
 }

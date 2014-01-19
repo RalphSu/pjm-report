@@ -151,8 +151,8 @@ public class ReportGenerator {
 		}
 
 		private boolean writeToFile(Map<ReportTemplate, List<ReportLine>> reportData) {
-			ReportPOIWriter writer = new ReportPOIWriter();
-			return writer.write(task, reportData);
+			ReportPOIWriter writer = new ReportPOIWriter(dao,task);
+			return writer.write(reportData);
 		}
 
 	}

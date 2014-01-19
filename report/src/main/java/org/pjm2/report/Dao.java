@@ -33,11 +33,11 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class Dao {
-	private static final String NEWS_TEMPLATE_TYPE = "新闻类模板";
-	private static final String WEIBO_TEMPLATE_TYPE = "微博类模板";
-	private static final String BLOG_TEMPLATE_TYPE = "博客类模板";
-	private static final String FORUM_TEMPLATE_TYPE = "论坛类模板";
-	private static final Integer MAX_GENERATION_COUNT = 6;
+	public	static final String NEWS_TEMPLATE_TYPE = "新闻类模板";
+	public 	static final String WEIBO_TEMPLATE_TYPE = "微博类模板";
+	public 	static final String BLOG_TEMPLATE_TYPE = "博客类模板";
+	public  static final String FORUM_TEMPLATE_TYPE = "论坛类模板";
+	public  static final Integer MAX_GENERATION_COUNT = 6;
 
 	private static Logger logger = LoggerFactory.getLogger(Dao.class);
 
@@ -124,6 +124,11 @@ public class Dao {
 		} else {
 			throw new IllegalArgumentException("unkonw tempalte" + template.getTemplate_type());
 		}
+	}
+	
+	public long findReportLineCount(ReportTemplate template, long pid, Date starTime, Date endTime) {
+		 List<ReportLine> results = findReportLine(template, pid, starTime,endTime);
+		 return results.size();
 	}
 	
 	public void save(Object entity) {
