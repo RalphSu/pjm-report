@@ -103,11 +103,13 @@ public class ReportPOIWriter {
 			title.setTextPosition(25);
 			title.setText(String.format("报表 - %s : �%s � %s ", task.getProjectName(), task.getReportStartTime(), task.getReportEndTime()));
 
-			Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = shuffle(reportData);
-			for (Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e : sortedData.entrySet()) {
-				writeTemplateType(doc, e);
-			}
-			writeImageAnaylysis(doc,reportData);
+//			Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = shuffle(reportData);
+//			for (Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e : sortedData.entrySet()) {
+//				writeTemplateType(doc, e);
+//			}
+			
+				writeImageAnaylysis(doc,reportData);	
+			
 			save(doc);
 		} catch (Exception e) {
 			logger.error("Fail to write the template!", e);
@@ -140,7 +142,7 @@ public class ReportPOIWriter {
 			out = new FileOutputStream(file);
 			doc.write(out);
 			out.flush();
-            task.setGen_path(file);
+            task.setGen_path("/reports/" + this.task.getProjectName() + "/"+task.getId()+".docx");
 		} catch (FileNotFoundException e) {
 			logger.error("Can not open doc file for write!", e);
 			throw new RuntimeException(e);
@@ -430,16 +432,17 @@ public class ReportPOIWriter {
 						calStartDate, calEndDate);
 				totalcount +=count;
 			}
-			System.out.println("date "+calStartDate.toString()+" total count "+totalcount);
+			
 			Calendar cal2 = Calendar.getInstance();
 			cal2.setTime(calStartDate);
 			Day days = new Day(cal2.get(Calendar.DAY_OF_MONTH),cal2.get(Calendar.MONTH)+1, cal2.get(Calendar.YEAR));
 			
-
+			if(totalcount==0) continue;
 			 timeseries.add(days, (int)totalcount); 
-			 timeSeriesCollection.addSeries(timeseries);
+			 
 			 
 		}
+		timeSeriesCollection.addSeries(timeseries);
 		return timeSeriesCollection;
 	}
 
