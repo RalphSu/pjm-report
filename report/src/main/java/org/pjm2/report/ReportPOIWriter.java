@@ -103,10 +103,10 @@ public class ReportPOIWriter {
 			title.setTextPosition(25);
 			title.setText(String.format("报表 - %s : �%s � %s ", task.getProjectName(), task.getReportStartTime(), task.getReportEndTime()));
 
-//			Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = shuffle(reportData);
-//			for (Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e : sortedData.entrySet()) {
-//				writeTemplateType(doc, e);
-//			}
+			Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = shuffle(reportData);
+			for (Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e : sortedData.entrySet()) {
+				writeTemplateType(doc, e);
+			}
 			
 				writeImageAnaylysis(doc,reportData);	
 			
