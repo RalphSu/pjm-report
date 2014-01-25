@@ -61,13 +61,17 @@ public class ReportGenerator {
 		stop = false;
 
 		while (!stop) {
-			List<Job> jobs = getJobs();
-			// submit jobs
-			for (Job job : jobs) {
-				runningTaskId.put(job.task.getId(), job);
-				executors.submit(job);
+			try {
+				List<Job> jobs = getJobs();
+				// submit jobs
+				for (Job job : jobs) {
+					runningTaskId.put(job.task.getId(), job);
+					executors.submit(job);
+				}
+				slientWait();
+			} catch (Throwable t) {
+				logger.error("report genration encounter an error! catch and log this, then continue running!");
 			}
-			slientWait();
 		}
 	}
 
@@ -133,7 +137,6 @@ public class ReportGenerator {
 					// mark end
 					task.setStatus(Status.generated.toString());
 	                task.setGenEndTime(new Date());
-					task.addGen_count();
 					dao.save(task);
 					logger.info("end generation for task : task id " + task.getId() + " . For project " + task.getProjectName() + ". File write at $PJM_HOME/" + task.getGen_path());
 				} else {
@@ -147,6 +150,14 @@ public class ReportGenerator {
 			} finally {
 				// remove from set
 				ReportGenerator.this.runningTaskId.remove(task.getId());
+				try {
+					task.addGen_count();
+					dao.save(task);
+				} catch (Throwable t) {
+					// ignore
+					logger.warn("fail to increase gen-count for task" + task.getId(), t);
+				}
+
 			}
 		}
 
