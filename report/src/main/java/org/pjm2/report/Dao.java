@@ -154,9 +154,13 @@ public class Dao {
 			try {
 				if (tx.isActive())
 					tx.rollback();
+			} catch (Exception e) {
+				logger.error("error in update",e);
+			}
+			try {
 				manager.close();
 			} catch (Exception e) {
-				logger.error("error in update,Could not close entitymanager",e);
+				logger.error("Could not close entitymanager",e);
 			}
 			
 		}
