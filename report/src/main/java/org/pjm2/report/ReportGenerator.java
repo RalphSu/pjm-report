@@ -63,6 +63,7 @@ public class ReportGenerator {
 		while (!stop) {
 			try {
 				List<Job> jobs = getJobs();
+				logger.info("get jobs @ " + new Date() + "with job size " + jobs.size());
 				// submit jobs
 				for (Job job : jobs) {
 					runningTaskId.put(job.task.getId(), job);
