@@ -123,6 +123,8 @@ public class ReportPOIWriter {
 		String prefix = System.getenv("PJM_HOME");
 		if(prefix==null)
 			prefix = System.getProperty("PJM_HOME");
+		if(prefix==null)
+		    prefix = " ../../pjm2/";
 		String path = prefix + "/reports/" + this.task.getProjectName() + "/";
 		// check parent directory
 		try{
@@ -139,6 +141,7 @@ public class ReportPOIWriter {
 		try {
 			String path = getReportFilePath();
 			String file = path + task.getId() + ".docx";
+            logger.info(" write to file path:" + file);
 			out = new FileOutputStream(file);
 			doc.write(out);
 			out.flush();
@@ -160,7 +163,7 @@ public class ReportPOIWriter {
 		}
 	}
 
-	private void writeTemplateType(XWPFDocument doc, Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e) {
+	private void writeTemplateType(CustomXWPFDocument doc, Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e) {
 		XWPFParagraph templateParagraph = doc.createParagraph();
 		templateParagraph.setAlignment(ParagraphAlignment.LEFT);
 		templateParagraph.setVerticalAlignment(TextAlignment.CENTER);
@@ -271,7 +274,6 @@ public class ReportPOIWriter {
     			false, // 是否生成工具
     			false // 是否生成URL链接
     			); 
-    	 Font font = new Font("", Font.BOLD, 14);  
          chart.setTitle(getTextTile("新闻发布平台分布"));
          
     	chart.setBackgroundPaint(Color.WHITE);   
@@ -414,11 +416,11 @@ public class ReportPOIWriter {
 		return chartToFile(chart, "trend");
 	}
 	
-	private TimeSeriesCollection getTimeSeriesCollection(Set<ReportTemplate> reportData){
+	@SuppressWarnings("deprecation")
+    private TimeSeriesCollection getTimeSeriesCollection(Set<ReportTemplate> reportData){
 		//default get previous 2 weeks data 
 		 TimeSeriesCollection timeSeriesCollection = new TimeSeriesCollection();
-		 TimeSeries timeseries = new TimeSeries("ffffff",  
-                org.jfree.data.time.Day.class);  
+        TimeSeries timeseries = new TimeSeries("ffffff", org.jfree.data.time.Day.class);
 		for(int m=15;m>0;m--){
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(this.task.getReportStartTime());
@@ -446,7 +448,8 @@ public class ReportPOIWriter {
 		return timeSeriesCollection;
 	}
 
-	private  JFreeChart createChartPress(XYDataset xydataset,  
+	@SuppressWarnings("deprecation")
+    private  JFreeChart createChartPress(XYDataset xydataset,  
             String title) {  
  
      
@@ -521,7 +524,6 @@ public class ReportPOIWriter {
         StandardXYToolTipGenerator xytool = new StandardXYToolTipGenerator();  
         xylineandshaperenderer.setToolTipGenerator(xytool);  
         xylineandshaperenderer.setStroke(new BasicStroke(1.5f));  
- 
    
  
         return jfreechart;  
@@ -539,21 +541,13 @@ public class ReportPOIWriter {
 	}
 
 
-	private void writeModule(XWPFDocument doc, int index, ReportTemplate template, List<ReportLine> lines) {
-		XWPFParagraph moduleParagraph = doc.createParagraph();
-		moduleParagraph.setAlignment(ParagraphAlignment.LEFT);
-		moduleParagraph.setVerticalAlignment(TextAlignment.CENTER);
-		XWPFRun moduleIndex = moduleParagraph.createRun();
-		moduleIndex.setBold(true);
-		moduleIndex.setFontSize(18);
-		moduleIndex.setText("模块 " + index);
-		
+	private void writeModule(CustomXWPFDocument doc, int index, ReportTemplate template, List<ReportLine> lines) {
 		XWPFParagraph nameParagraph = doc.createParagraph();
 		nameParagraph.setAlignment(ParagraphAlignment.LEFT);
 		nameParagraph.setVerticalAlignment(TextAlignment.CENTER);
 		XWPFRun moduleName = nameParagraph.createRun();
 		moduleName.setBold(false);
-		moduleName.setFontSize(16);
+		moduleName.setFontSize(18);
 		moduleName.setText("模块名称: " + template.getClassified());
 
 		// table
@@ -574,15 +568,19 @@ public class ReportPOIWriter {
 			headerCells.get(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
 		}
 
-		// now lines : should we limit the line size??
-		final int LINE_SIZE = Math.min(lines.size(), 1000);
+        Set<String> imagePaths = new HashSet<String>();
+		final int LINE_SIZE = lines.size();
 		for (int j = 1; j < LINE_SIZE; j++) {
 			ReportLine line = lines.get(j);
 			XWPFTableRow row = table.getRow(j);
 			for (int i = 0; i < headers.size(); i++) {
 				Object obj = line.getColumns().get(headers.get(i));
 				if (obj != null) {
-					row.getCell(i).setText(obj.toString());
+					String body = obj.toString();
+                    row.getCell(i).setText(body);
+                    // find matched image if any
+                    List<String> path = dao.findImagePathByUrl(body);
+                    imagePaths.addAll(path);
 				} else {
 					row.getCell(i).setText("");
 				}
@@ -591,10 +589,48 @@ public class ReportPOIWriter {
 		}
 
 		// picture
-		// TODO
+		writeModuleImage(doc, imagePaths);
 	}
 
-	private Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> shuffle(Map<ReportTemplate, List<ReportLine>> reportData) {
+	private void writeModuleImage(CustomXWPFDocument doc, Set<String> imagePaths) {
+	    logger.info("start write image for module... ");
+        for (String path : imagePaths) {
+            FileInputStream fis = null;
+            // detect extension
+            int index = path.lastIndexOf('.');
+            int fileType = XWPFDocument.PICTURE_TYPE_PNG;
+            if (index >=0) {
+                String ext = path.substring(index);
+                ext = ext.toUpperCase();
+                if (ext.endsWith("JPEG") ) {
+                    fileType = XWPFDocument.PICTURE_TYPE_JPEG;
+                } else if (ext.endsWith("BMP")) {
+                    fileType = XWPFDocument.PICTURE_TYPE_BMP;
+                } else if (ext.endsWith("GIF")) {
+                    fileType = XWPFDocument.PICTURE_TYPE_GIF;
+                }
+            }
+            
+            try {
+                fis = new FileInputStream(path);
+                doc.addPictureData(fis, fileType);
+                doc.createPicture(doc.getAllPictures().size() - 1, CHART_WIDTH, CHART_HEIGHT);
+            } catch (Throwable t) {
+                logger.error("write module image failed. Path is " + path, t);
+            } finally {
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (Exception e) {
+                        // ignore
+                        logger.warn("close failure", e);
+                    }
+                }
+            }
+        }
+    }
+
+    private Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> shuffle(Map<ReportTemplate, List<ReportLine>> reportData) {
 		// {template_type => [ report_template => List<ReportLine> ] }
 		Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = new TreeMap<String, List<Entry<ReportTemplate, List<ReportLine>>>>();
 		

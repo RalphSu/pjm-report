@@ -52,10 +52,12 @@ public class Dao {
 	}
 
 	private EntityManagerFactory managerFactory;
+	private EntityManager manager;
 	private final Map<String, IEntityDao> daos = new HashMap<String, IEntityDao>();
 
 	public void init() {
 		managerFactory = buildSessionFactory(new HashMap<String, String>());
+        manager = managerFactory.createEntityManager();
 		initDaos();
 	}
 
@@ -81,7 +83,6 @@ public class Dao {
 	public List<ReportTask> findTODOTasks() {
 		String sql = "select * from report_tasks where status in ('%s', '%s') and ( gen_count IS NULL or gen_count <= %d )";
         sql = String.format(sql, Status.planned, Status.inprogress, MAX_GENERATION_COUNT);
-        EntityManager manager = managerFactory.createEntityManager();
 		Query query = manager.createNativeQuery(sql, ReportTask.class);
 		List<?> result = query.getResultList();
 		List<ReportTask> tasks = (List<ReportTask>) result;
@@ -112,7 +113,6 @@ public class Dao {
 	@SuppressWarnings("unchecked")
 	public List<ReportTemplate> findReportTemplates(Long project_id) {
 		String sql = "select * from report_templates where project_id = " + project_id;
-		EntityManager manager = managerFactory.createEntityManager();
 		Query query = manager.createNativeQuery(sql, ReportTemplate.class);
 		List<?> result = query.getResultList();
 		return (List<ReportTemplate>) result;
@@ -161,6 +161,23 @@ public class Dao {
 			
 		}
 		
-	}
+    }
+
+    public List<String> findImagePathByUrl(String body) {
+        List<String> paths = new ArrayList<String>();
+        try {
+            String sql = "select file_path from images where url = '%s'";
+            Query query = manager.createNativeQuery(String.format(sql, body));
+            List<?> sqlResult = query.getResultList();
+            for (Object o : sqlResult) {
+                if (o != null) {
+                    paths.add(o.toString());
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Cannot query for image path : " + body, e);
+        }
+        return paths;
+    }
 
 }
