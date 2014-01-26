@@ -177,7 +177,7 @@ public class ReportPOIWriter {
 //		templateParagraph.setVerticalAlignment(TextAlignment.CENTER);
 		templateParagraph.setStyle("Heading1");
 		XWPFRun templateRun = templateParagraph.createRun();
-//		templateRun.setFontSize(20);
+		templateRun.setFontSize(20);
 		templateRun.setText(e.getKey().substring(0, e.getKey().length() - 2)); // assume last two word is "模板"
 //		templateRun.setBold(true);
 
@@ -191,7 +191,21 @@ public class ReportPOIWriter {
 	}
 	
 	public void writeImageAnaylysis( CustomXWPFDocument doc, Map<ReportTemplate, List<ReportLine>> reportData) {
+		{
+			XWPFParagraph templateParagraph = doc.createParagraph();
+			templateParagraph.setStyle("Heading1");
+			XWPFRun templateRun = templateParagraph.createRun();
+			templateRun.setFontSize(20);
+			templateRun.setText("图标类模板");
+		}
 		
+		{
+			XWPFParagraph labelParagraph = doc.createParagraph();
+			labelParagraph.setStyle("Heading2");
+			XWPFRun templateRun = labelParagraph.createRun();
+			templateRun.setFontSize(16);
+			templateRun.setText("网络與情信息每日與情走势");
+		}
 		String trendCountFileName = createTrendCountFile(reportData.keySet());
 		try{
 			FileInputStream fis=new FileInputStream(trendCountFileName);
@@ -201,6 +215,13 @@ public class ReportPOIWriter {
 			logger.error("write trendCountFileName ",t);
 		}
 		
+		{
+			XWPFParagraph labelParagraph = doc.createParagraph();
+			labelParagraph.setStyle("Heading2");
+			XWPFRun templateRun = labelParagraph.createRun();
+			templateRun.setFontSize(16);
+			templateRun.setText("监测信息平台分布图");
+		}
 		String distroPieChartFileName = createDistroPieChartFileName(reportData);
 		try{
 			FileInputStream fis=new FileInputStream(distroPieChartFileName);
@@ -210,6 +231,13 @@ public class ReportPOIWriter {
 			logger.error("write distroPieChartFileName ",t);
 		}
 	
+		{
+			XWPFParagraph labelParagraph = doc.createParagraph();
+			labelParagraph.setStyle("Heading2");
+			XWPFRun templateRun = labelParagraph.createRun();
+			templateRun.setFontSize(16);
+			templateRun.setText("视频信息比重");
+		}
 		String videoPieChartFileName = createVideoPieChartFileName(reportData);
 		try{
 			FileInputStream fis=new FileInputStream(videoPieChartFileName);
@@ -222,6 +250,13 @@ public class ReportPOIWriter {
 		//FIXME 4.	网络关注情况分布
 		
 		//5.	网络新闻信息每日舆情走势
+		{
+			XWPFParagraph labelParagraph = doc.createParagraph();
+			labelParagraph.setStyle("Heading2");
+			XWPFRun templateRun = labelParagraph.createRun();
+			templateRun.setFontSize(16);
+			templateRun.setText("网络新闻信息每日舆情走势");
+		}
 		String newsTrendCountFileName = createNewsTrendCountFile(reportData.keySet());
 		try{
 			FileInputStream fis=new FileInputStream(newsTrendCountFileName);
@@ -231,7 +266,13 @@ public class ReportPOIWriter {
 			logger.error("write newsTrendCountFileName ",t);
 		}
 		
-		//
+		{
+			XWPFParagraph labelParagraph = doc.createParagraph();
+			labelParagraph.setStyle("Heading2");
+			XWPFRun templateRun = labelParagraph.createRun();
+			templateRun.setFontSize(16);
+			templateRun.setText("网络新闻信息媒体覆盖情况");
+		}
 		String newsPlatformDistro = createNewsPlatformDistro(reportData);
 		try{
 			FileInputStream fis=new FileInputStream(newsPlatformDistro);
