@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -110,6 +111,14 @@ public class ReportPOIWriter {
 			String startDate = format.format(task.getReportStartTime());
 			title.setText(String.format("%s-%s  %s ", task.getProjectName(),type, startDate));
 
+			// insert a page break
+			{
+//				XWPFParagraph breakPara = doc.createParagraph();
+//				breakPara.setPageBreak(true);
+				XWPFRun breakRun = p1.createRun();
+				breakRun.addBreak(BreakType.PAGE);
+			}
+			
 			Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = shuffle(reportData);
 			for (Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e : sortedData.entrySet()) {
 				writeTemplateType(doc, e);
