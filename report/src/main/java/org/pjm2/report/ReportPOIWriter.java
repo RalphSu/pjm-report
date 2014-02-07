@@ -99,7 +99,16 @@ public class ReportPOIWriter {
 //			title.setFontSize(25);
 //			title.setFontFamily("Courier");
 //			title.setTextPosition(25);
-			title.setText(String.format("报表 - %s : �%s � %s ", task.getProjectName(), task.getReportStartTime(), task.getReportEndTime()));
+			
+			String type = "日报";
+			if(ReportTask.TASKTYPE.weekly.name().equalsIgnoreCase(task.getTaskType())){
+				type="周报 ";
+			}else if(ReportTask.TASKTYPE.summary.name().equalsIgnoreCase(task.getTaskType())){
+				type="结案报告";
+			}
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+			String startDate = format.format(task.getReportStartTime());
+			title.setText(String.format("%s-%s  %s ", task.getProjectName(),type, startDate));
 
 			Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = shuffle(reportData);
 			for (Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e : sortedData.entrySet()) {
@@ -248,12 +257,31 @@ public class ReportPOIWriter {
     			if("发布平台".equals(columnName)){
     				Object platform = reportLine.getColumns().get(columnName);
     				if(platform instanceof String){
-    					if(platformDistro.containsKey((String) platform)){
-    						int count = platformDistro.get((String) platform);
+    					String platformCatalog="其他";
+    					if(((String)platform).contains("新浪")){
+    						platformCatalog="新浪";
+    					}else if(((String)platform).contains("搜狐")){
+    						platformCatalog="搜狐";
+    					}else if(((String)platform).contains("网易")){
+    						platformCatalog="网易";
+    					}else if(((String)platform).contains("腾讯")){
+    						platformCatalog="腾讯";
+    					}else if(((String)platform).contains("凤凰")){
+    						platformCatalog="凤凰";
+    					}else if(((String)platform).contains("人民网")){
+    						platformCatalog="人民网";
+    					}else if(((String)platform).contains("东方网")){
+    						platformCatalog="东方网";
+    					}else if(((String)platform).contains("新华网")){
+    						platformCatalog="新华网";
+    					}
+    					
+    					if(platformDistro.containsKey(platformCatalog)){
+    						int count = platformDistro.get(platformCatalog);
     						count++;
-    						platformDistro.put((String) platform, count);
+    						platformDistro.put(platformCatalog, count);
     					}else{
-    						platformDistro.put((String)platform, 1);
+    						platformDistro.put(platformCatalog, 1);
     					}
     				}else continue;
     			}
@@ -712,6 +740,13 @@ public class ReportPOIWriter {
         		ReportLine line =  new ReportLine();
         		line.setColumns(new HashMap<String, Object>());
         		line.getColumns().put("发布平台", "新浪");
+        		line1.add(line);	
+        	}
+        	
+        	for(int m=0;m<10;m++){
+        		ReportLine line =  new ReportLine();
+        		line.setColumns(new HashMap<String, Object>());
+        		line.getColumns().put("发布平台", "吉祥");
         		line1.add(line);	
         	}
         	reportData.put(reportTemplate, line1);

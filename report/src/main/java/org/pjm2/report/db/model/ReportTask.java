@@ -22,6 +22,12 @@ public class ReportTask {
 		published;
 	}
 
+	public enum TASKTYPE{
+		daily,
+		weekly,
+		summary
+	}
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
@@ -34,6 +40,9 @@ public class ReportTask {
 
     @Column
     private String  type;
+    
+    @Column(name="task_type")
+    private String taskType;
 
 	@Column(name = "gen_start_time")
 	private Date genStartTime;
@@ -184,6 +193,10 @@ public class ReportTask {
 
     public void setReviewed_path(String reviewed_path) {
         this.reviewed_path = reviewed_path;
+    }
+    
+    public String getTaskType(){
+    	return this.taskType;
     }
 
 }
