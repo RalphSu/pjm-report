@@ -29,8 +29,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
-import org.apache.poi.xwpf.usermodel.TextAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -95,12 +93,12 @@ public class ReportPOIWriter {
 			XWPFParagraph p1 = doc.createParagraph();
 			p1.setStyle("Title");
 			XWPFRun title = p1.createRun();
-			p1.setAlignment(ParagraphAlignment.CENTER);
-			p1.setVerticalAlignment(TextAlignment.TOP);
-			title.setBold(true);
-			title.setFontSize(25);
-			title.setFontFamily("Courier");
-			title.setTextPosition(25);
+//			p1.setAlignment(ParagraphAlignment.CENTER);
+//			p1.setVerticalAlignment(TextAlignment.TOP);
+//			title.setBold(true);
+//			title.setFontSize(25);
+//			title.setFontFamily("Courier");
+//			title.setTextPosition(25);
 			title.setText(String.format("报表 - %s : �%s � %s ", task.getProjectName(), task.getReportStartTime(), task.getReportEndTime()));
 
 			Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = shuffle(reportData);
@@ -127,6 +125,7 @@ public class ReportPOIWriter {
 		    prefix = " ../../pjm2/";
 		String path = prefix + "/reports/" + this.task.getProjectName() + "/";
 		// check parent directory
+//		path = "/home/likewise-open/CORP/liasu/2.docx";
 		try{
 			FileUtils.forceMkdir(new File(path));	
 		}catch(Throwable t){
@@ -165,13 +164,13 @@ public class ReportPOIWriter {
 
 	private void writeTemplateType(CustomXWPFDocument doc, Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e) {
 		XWPFParagraph templateParagraph = doc.createParagraph();
-		templateParagraph.setAlignment(ParagraphAlignment.LEFT);
-		templateParagraph.setVerticalAlignment(TextAlignment.CENTER);
-		templateParagraph.setStyle("Heading 1");
+//		templateParagraph.setAlignment(ParagraphAlignment.LEFT);
+//		templateParagraph.setVerticalAlignment(TextAlignment.CENTER);
+		templateParagraph.setStyle("Heading1");
 		XWPFRun templateRun = templateParagraph.createRun();
-		templateRun.setFontSize(20);
+//		templateRun.setFontSize(20);
 		templateRun.setText(e.getKey().substring(0, e.getKey().length() - 2)); // assume last two word is "模板"
-		templateRun.setBold(true);
+//		templateRun.setBold(true);
 
 		int i = 0;
 		for (Entry<ReportTemplate, List<ReportLine>> module : e.getValue()) {
@@ -544,12 +543,12 @@ public class ReportPOIWriter {
 
 	private void writeModule(CustomXWPFDocument doc, int index, ReportTemplate template, List<ReportLine> lines) {
 		XWPFParagraph nameParagraph = doc.createParagraph();
-		nameParagraph.setAlignment(ParagraphAlignment.LEFT);
-		nameParagraph.setVerticalAlignment(TextAlignment.CENTER);
-		nameParagraph.setStyle("Heading 2");
+//		nameParagraph.setAlignment(ParagraphAlignment.LEFT);
+//		nameParagraph.setVerticalAlignment(TextAlignment.CENTER);
+		nameParagraph.setStyle("Heading2");
 		XWPFRun moduleName = nameParagraph.createRun();
-		moduleName.setBold(false);
-		moduleName.setFontSize(18);
+//		moduleName.setBold(false);
+//		moduleName.setFontSize(18);
 		moduleName.setText("模块名称: " + template.getClassified());
 
 		// table
