@@ -167,6 +167,7 @@ public class ReportPOIWriter {
 		XWPFParagraph templateParagraph = doc.createParagraph();
 		templateParagraph.setAlignment(ParagraphAlignment.LEFT);
 		templateParagraph.setVerticalAlignment(TextAlignment.CENTER);
+		templateParagraph.setStyle("Heading 1");
 		XWPFRun templateRun = templateParagraph.createRun();
 		templateRun.setFontSize(20);
 		templateRun.setText(e.getKey().substring(0, e.getKey().length() - 2)); // assume last two word is "模板"
@@ -545,6 +546,7 @@ public class ReportPOIWriter {
 		XWPFParagraph nameParagraph = doc.createParagraph();
 		nameParagraph.setAlignment(ParagraphAlignment.LEFT);
 		nameParagraph.setVerticalAlignment(TextAlignment.CENTER);
+		nameParagraph.setStyle("Heading 2");
 		XWPFRun moduleName = nameParagraph.createRun();
 		moduleName.setBold(false);
 		moduleName.setFontSize(18);
