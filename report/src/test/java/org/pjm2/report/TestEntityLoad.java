@@ -45,7 +45,7 @@ public class TestEntityLoad extends TestCase {
 //		dao.findReportLine(t, 7, new Date(), new Date());
 //	}
 	
-	public void findTODOTasks() {
+	public void testfindTODOTasks() {
 	    List<ReportTask> tasks = dao.findTODOTasks();
 	    for (ReportTask t : tasks) {
 	    	
