@@ -30,6 +30,8 @@ import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.xwpf.usermodel.BreakType;
+import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
+import org.apache.poi.xwpf.usermodel.TextAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -91,31 +93,40 @@ public class ReportPOIWriter {
 	public boolean write( Map<ReportTemplate, List<ReportLine>> reportData) {
 		try {
 			CustomXWPFDocument doc = new CustomXWPFDocument(ReportPOIWriter.class.getResourceAsStream("/Template.docx"));
-			XWPFParagraph p1 = doc.createParagraph();
-			p1.setStyle("Title");
-			XWPFRun title = p1.createRun();
-//			p1.setAlignment(ParagraphAlignment.CENTER);
-//			p1.setVerticalAlignment(TextAlignment.TOP);
-//			title.setBold(true);
-//			title.setFontSize(25);
-//			title.setFontFamily("Courier");
-//			title.setTextPosition(25);
-			
-			String type = "日报";
-			if(ReportTask.TASKTYPE.weekly.name().equalsIgnoreCase(task.getTaskType())){
-				type="周报 ";
-			}else if(ReportTask.TASKTYPE.summary.name().equalsIgnoreCase(task.getTaskType())){
-				type="结案报告";
+			{
+				XWPFParagraph p1 = doc.createParagraph();
+				XWPFRun title = p1.createRun();
+				p1.setAlignment(ParagraphAlignment.CENTER);
+				p1.setVerticalAlignment(TextAlignment.TOP);
+				title.setBold(true);
+				title.setFontSize(20);
+//				title.setFontFamily("微软雅黑");
+				title.setText(String.format("%s",task.getProjectName()));
 			}
-			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-			String startDate = format.format(task.getReportStartTime());
-			title.setText(String.format("%s-%s  %s ", task.getProjectName(),type, startDate));
+			XWPFParagraph p2 = doc.createParagraph();
+			{
+				String type = "日报";
+				if (ReportTask.TASKTYPE.weekly.name().equalsIgnoreCase(
+						task.getTaskType())) {
+					type = "周报 ";
+				} else if (ReportTask.TASKTYPE.summary.name().equalsIgnoreCase(
+						task.getTaskType())) {
+					type = "结案报告";
+				}
+				XWPFRun title1 = p2.createRun();
+				p2.setAlignment(ParagraphAlignment.CENTER);
+				p2.setVerticalAlignment(TextAlignment.TOP);
+				title1.setBold(false);
+				title1.setFontSize(14);
+//				title1.setFontFamily("微软雅黑");
+				SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日");
+				String startDate = format.format(task.getReportStartTime());
+				title1.setText(String.format("（%s - %s）", startDate, type));
+			}
 
 			// insert a page break
 			{
-//				XWPFParagraph breakPara = doc.createParagraph();
-//				breakPara.setPageBreak(true);
-				XWPFRun breakRun = p1.createRun();
+				XWPFRun breakRun = p2.createRun();
 				breakRun.addBreak(BreakType.PAGE);
 			}
 			
@@ -205,14 +216,15 @@ public class ReportPOIWriter {
 			templateParagraph.setStyle("Heading1");
 			XWPFRun templateRun = templateParagraph.createRun();
 			templateRun.setFontSize(20);
-			templateRun.setText("图标类模板");
+			templateRun.setText("图表类");
 		}
 		
 		{
 			XWPFParagraph labelParagraph = doc.createParagraph();
 			labelParagraph.setStyle("Heading2");
 			XWPFRun templateRun = labelParagraph.createRun();
-			templateRun.setFontSize(16);
+			templateRun.setFontSize(14);
+			templateRun.setBold(false);
 			templateRun.setText("网络與情信息每日與情走势");
 		}
 		String trendCountFileName = createTrendCountFile(reportData.keySet());
@@ -228,7 +240,7 @@ public class ReportPOIWriter {
 			XWPFParagraph labelParagraph = doc.createParagraph();
 			labelParagraph.setStyle("Heading2");
 			XWPFRun templateRun = labelParagraph.createRun();
-			templateRun.setFontSize(16);
+			templateRun.setFontSize(14);
 			templateRun.setText("监测信息平台分布图");
 		}
 		String distroPieChartFileName = createDistroPieChartFileName(reportData);
@@ -244,7 +256,7 @@ public class ReportPOIWriter {
 			XWPFParagraph labelParagraph = doc.createParagraph();
 			labelParagraph.setStyle("Heading2");
 			XWPFRun templateRun = labelParagraph.createRun();
-			templateRun.setFontSize(16);
+			templateRun.setFontSize(14);
 			templateRun.setText("视频信息比重");
 		}
 		String videoPieChartFileName = createVideoPieChartFileName(reportData);
@@ -263,7 +275,7 @@ public class ReportPOIWriter {
 			XWPFParagraph labelParagraph = doc.createParagraph();
 			labelParagraph.setStyle("Heading2");
 			XWPFRun templateRun = labelParagraph.createRun();
-			templateRun.setFontSize(16);
+			templateRun.setFontSize(14);
 			templateRun.setText("网络新闻信息每日舆情走势");
 		}
 		String newsTrendCountFileName = createNewsTrendCountFile(reportData.keySet());
@@ -279,7 +291,7 @@ public class ReportPOIWriter {
 			XWPFParagraph labelParagraph = doc.createParagraph();
 			labelParagraph.setStyle("Heading2");
 			XWPFRun templateRun = labelParagraph.createRun();
-			templateRun.setFontSize(16);
+			templateRun.setFontSize(14);
 			templateRun.setText("网络新闻信息媒体覆盖情况");
 		}
 		String newsPlatformDistro = createNewsPlatformDistro(reportData);
@@ -621,13 +633,13 @@ public class ReportPOIWriter {
 
 	private void writeModule(CustomXWPFDocument doc, int index, ReportTemplate template, List<ReportLine> lines) {
 		XWPFParagraph nameParagraph = doc.createParagraph();
-//		nameParagraph.setAlignment(ParagraphAlignment.LEFT);
-//		nameParagraph.setVerticalAlignment(TextAlignment.CENTER);
+		nameParagraph.setAlignment(ParagraphAlignment.LEFT);
+		nameParagraph.setVerticalAlignment(TextAlignment.CENTER);
 		nameParagraph.setStyle("Heading2");
 		XWPFRun moduleName = nameParagraph.createRun();
-//		moduleName.setBold(false);
-//		moduleName.setFontSize(18);
-		moduleName.setText("模块名称: " + template.getClassified());
+		moduleName.setBold(false);
+		moduleName.setFontSize(14);
+		moduleName.setText(template.getClassified());
 
 		// table
 		List<String> headers = template.getColumnHeaders();
@@ -751,6 +763,7 @@ public class ReportPOIWriter {
     	ReportTask task = new ReportTask();
     	task.setReportStartTime(new Date());
     	task.setProjectId(1l);
+    	task.setProjectName("null");
     	task.setId(2l);
     	ReportPOIWriter writer = new ReportPOIWriter(daotest, task);
     	Set<ReportTemplate> templates = new HashSet<ReportTemplate>();
@@ -760,6 +773,7 @@ public class ReportPOIWriter {
     	{
     		// news
     		ReportTemplate reportTemplate = new ReportTemplate();
+    		reportTemplate.setClassified("新闻稿发布");
     		reportTemplate.setTemplate_type(Dao.NEWS_TEMPLATE_TYPE);
     		List<ReportLine> line1 = new ArrayList<ReportLine>();
         	for(int m=0;m<80;m++){
@@ -807,6 +821,7 @@ public class ReportPOIWriter {
     		// blog
     		ReportTemplate reportTemplate = new ReportTemplate();
     		reportTemplate.setTemplate_type(Dao.BLOG_TEMPLATE_TYPE);
+    		reportTemplate.setClassified("名人博客");
     		List<ReportLine> line1 = new ArrayList<ReportLine>();
         	for(int m=0;m<300;m++){
         		line1.add(new ReportLine());	
@@ -819,6 +834,7 @@ public class ReportPOIWriter {
     		// forum
     		ReportTemplate reportTemplate = new ReportTemplate();
     		reportTemplate.setTemplate_type(Dao.FORUM_TEMPLATE_TYPE);
+    		reportTemplate.setClassified("论坛");
     		List<ReportLine> line1 = new ArrayList<ReportLine>();
         	for(int m=0;m<200;m++){
         		line1.add(new ReportLine());	
@@ -830,6 +846,7 @@ public class ReportPOIWriter {
     		// twitter
     		ReportTemplate reportTemplate = new ReportTemplate();
     		reportTemplate.setTemplate_type(Dao.WEIBO_TEMPLATE_TYPE);
+    		reportTemplate.setClassified("微博直发");
     		List<ReportLine> line1 = new ArrayList<ReportLine>();
         	for(int m=0;m<2500;m++){
         		line1.add(new ReportLine());	
