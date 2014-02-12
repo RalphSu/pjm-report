@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.CacheRetrieveMode;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -15,6 +16,8 @@ import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.CacheModeType;
+import org.hibernate.jpa.AvailableSettings;
 import org.pjm2.report.db.model.ReportTask;
 import org.pjm2.report.db.model.ReportTask.Status;
 import org.pjm2.report.db.model.ReportTemplate;
@@ -85,6 +88,7 @@ public class Dao {
 		sql = String.format(sql, Status.planned, Status.inprogress,
 				MAX_GENERATION_COUNT);
 		Query query = manager.createNativeQuery(sql, ReportTask.class);
+		query.setHint(AvailableSettings.SHARED_CACHE_RETRIEVE_MODE, CacheRetrieveMode.BYPASS);
 		List<?> result = query.getResultList();
 		List<ReportTask> tasks = (List<ReportTask>) result;
 
@@ -97,8 +101,8 @@ public class Dao {
 			}
 			Map<Long, String> projects = new HashMap<Long, String>();
 			sql = "select id, name from projects where id in ( %s )";
-			query = manager.createNativeQuery(String.format(sql,
-					StringUtils.join(pId, ',')));
+			query = manager.createNativeQuery(String.format(sql,StringUtils.join(pId, ',')));
+			query.setHint(AvailableSettings.SHARED_CACHE_RETRIEVE_MODE, CacheRetrieveMode.BYPASS);
 			result = query.getResultList();
 			for (Object o : result) {
 				Object[] objs = (Object[]) o;
@@ -118,6 +122,7 @@ public class Dao {
 	public List<ReportTemplate> findReportTemplates(Long project_id) {
 		String sql = "select * from report_templates where project_id = " + project_id;
 		Query query = manager.createNativeQuery(sql, ReportTemplate.class);
+		query.setHint(AvailableSettings.SHARED_CACHE_RETRIEVE_MODE, CacheRetrieveMode.BYPASS);
 		List<?> result = query.getResultList();
 		return (List<ReportTemplate>) result;
 	}
@@ -176,6 +181,7 @@ public class Dao {
         try {
             String sql = "select file_path from images where url = '%s'";
             Query query = manager.createNativeQuery(String.format(sql, body));
+            query.setHint(AvailableSettings.SHARED_CACHE_RETRIEVE_MODE, CacheRetrieveMode.BYPASS);
             List<?> sqlResult = query.getResultList();
             for (Object o : sqlResult) {
                 if (o != null) {

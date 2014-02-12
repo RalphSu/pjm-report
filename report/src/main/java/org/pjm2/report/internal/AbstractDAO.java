@@ -8,11 +8,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.CacheRetrieveMode;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.jpa.AvailableSettings;
 import org.pjm2.report.db.model.ReportTemplate;
 import org.pjm2.report.model.ReportLine;
-import org.apache.commons.lang3.StringUtils;
 
 public abstract class AbstractDAO  implements IEntityDao {
 
@@ -30,6 +33,7 @@ public abstract class AbstractDAO  implements IEntityDao {
 		long dateClassifiedId = -1; 
 		String checkDateSql = getDateFieldSql();
 		Query checkQuery = manager.createNativeQuery(String.format(checkDateSql, template.getClassified()));
+		checkQuery.setHint(AvailableSettings.SHARED_CACHE_RETRIEVE_MODE, CacheRetrieveMode.BYPASS);
 		if (!checkQuery.getResultList().isEmpty()) {
 			dateClassifiedId = ((Number)checkQuery.getResultList().get(0)).longValue();
 		}
@@ -71,6 +75,7 @@ public abstract class AbstractDAO  implements IEntityDao {
 	private void fillTemplateColumName(ReportTemplate template) {
 		String sql = getColumnNameSql();
 		Query query = manager.createNativeQuery(String.format(sql, template.getClassified()));
+		query.setHint(AvailableSettings.SHARED_CACHE_RETRIEVE_MODE, CacheRetrieveMode.BYPASS);
 		List<?> columns = query.getResultList();
 		List<String> column_names = new ArrayList<String>();
 		for (Object o : columns) {
