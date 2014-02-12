@@ -30,7 +30,7 @@
 			<property name="hibernate.jdbc.use_streams_for_binary"
 				value="true" />
 			<property name="hibernate.cache.region_prefix" value="hibernate.test" />
-			<property name="hibernate.cache.use_query_cache" value="true" />
+			<property name="hibernate.cache.use_query_cache" value="false" />
 			<property name="hibernate.cache.provider_class" value="org.hibernate.cache.HashtableCacheProvider" />
 			<property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.ehcache.EhCacheRegionFactory" />
 			<property name="hibernate.query.substitutions" value="true 1, false 0, yes 'Y', no 'N'" />
