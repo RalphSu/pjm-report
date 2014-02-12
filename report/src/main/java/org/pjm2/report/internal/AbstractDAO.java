@@ -13,7 +13,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.CacheMode;
 import org.hibernate.jpa.AvailableSettings;
+import org.hibernate.jpa.QueryHints;
 import org.pjm2.report.db.model.ReportTemplate;
 import org.pjm2.report.model.ReportLine;
 
@@ -33,7 +35,7 @@ public abstract class AbstractDAO  implements IEntityDao {
 		long dateClassifiedId = -1; 
 		String checkDateSql = getDateFieldSql();
 		Query checkQuery = manager.createNativeQuery(String.format(checkDateSql, template.getClassified()));
-		checkQuery.setHint(AvailableSettings.SHARED_CACHE_RETRIEVE_MODE, CacheRetrieveMode.BYPASS);
+		checkQuery.setHint(QueryHints.HINT_CACHE_MODE, CacheMode.IGNORE);
 		if (!checkQuery.getResultList().isEmpty()) {
 			dateClassifiedId = ((Number)checkQuery.getResultList().get(0)).longValue();
 		}
@@ -75,7 +77,7 @@ public abstract class AbstractDAO  implements IEntityDao {
 	private void fillTemplateColumName(ReportTemplate template) {
 		String sql = getColumnNameSql();
 		Query query = manager.createNativeQuery(String.format(sql, template.getClassified()));
-		query.setHint(AvailableSettings.SHARED_CACHE_RETRIEVE_MODE, CacheRetrieveMode.BYPASS);
+		query.setHint(QueryHints.HINT_CACHE_MODE, CacheMode.IGNORE);
 		List<?> columns = query.getResultList();
 		List<String> column_names = new ArrayList<String>();
 		for (Object o : columns) {
