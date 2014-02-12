@@ -75,6 +75,7 @@ public class Dao {
 	// for test only
 	public void setEntityManagerFactory(EntityManagerFactory mgrfct) {
 		this.managerFactory = mgrfct;
+		manager = managerFactory.createEntityManager();
 		initDaos();
 	}
 
