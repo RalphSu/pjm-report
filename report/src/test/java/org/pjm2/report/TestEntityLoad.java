@@ -1,17 +1,16 @@
 package org.pjm2.report;
 
-import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import junit.framework.TestCase;
 
 import org.hibernate.cfg.Environment;
-import org.pjm2.report.db.model.ReportTemplate;
+import org.pjm2.report.db.model.ReportTask;
 
 public class TestEntityLoad extends TestCase {
 
@@ -27,7 +26,7 @@ public class TestEntityLoad extends TestCase {
 			Map<String, String> props = new HashMap<String, String>();
 			props.put(Environment.USER, "chiliproject");
 			props.put(Environment.PASS, "chili");
-			props.put(Environment.URL, "jdbc:mysql://d-shc-liasu.corp.ebay.com:3306/chiliproject");
+			props.put(Environment.URL, "jdbc:mysql://localhost:3306/chiliproject");
 			EntityManagerFactory sf = Persistence.createEntityManagerFactory("pjmUnit", props);
 			
 			dao.setEntityManagerFactory(sf);
@@ -37,17 +36,20 @@ public class TestEntityLoad extends TestCase {
 		}
 	}
 
-	public void testLoad() {
-		ReportTemplate t = new ReportTemplate();
-		t.setTemplate_type("微博类模板");
-//		t.setTemplate_type("新闻类模板");
-		t.setClassified("微博推广");
-//		t.setClassified("新闻稿推广");
-		dao.findReportLine(t, 7, new Date(), new Date());
-	}
+//	public void testLoad() {
+//		ReportTemplate t = new ReportTemplate();
+//		t.setTemplate_type("微博类模板");
+////		t.setTemplate_type("新闻类模板");
+//		t.setClassified("微博推广");
+////		t.setClassified("新闻稿推广");
+//		dao.findReportLine(t, 7, new Date(), new Date());
+//	}
 	
 	public void findTODOTasks() {
-	    dao.findTODOTasks();
+	    List<ReportTask> tasks = dao.findTODOTasks();
+	    for (ReportTask t : tasks) {
+	    	
+	    }
 	}
 
 }

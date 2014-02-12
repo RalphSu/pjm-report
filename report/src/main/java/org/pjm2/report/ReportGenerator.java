@@ -63,7 +63,7 @@ public class ReportGenerator {
 		while (!stop) {
 			try {
 				List<Job> jobs = getJobs();
-				logger.info("get jobs @ " + new Date() + "with job size " + jobs.size());
+				logger.info("get jobs @ " + new Date() + " with job size " + jobs.size());
 				// submit jobs
 				for (Job job : jobs) {
 					runningTaskId.put(job.task.getId(), job);
@@ -120,31 +120,39 @@ public class ReportGenerator {
 		public void run() {
 			try {
 				// mark start
-			    logger.info("start generation for task : " + task.getId() + "for project " + task.getProjectName());
+				logger.info("start generation for task : " + task.getId()
+						+ "for project " + task.getProjectName());
 				task.setStatus(Status.inprogress.toString());
-                task.setGenStartTime(new Date());
+				task.setGenStartTime(new Date());
 				dao.save(task);
 
 				// on-progress
-				List<ReportTemplate> templates = dao.findReportTemplates(task.getProjectId());
+				List<ReportTemplate> templates = dao.findReportTemplates(task
+						.getProjectId());
 				Map<ReportTemplate, List<ReportLine>> allReportData = new HashMap<ReportTemplate, List<ReportLine>>();
 				for (ReportTemplate template : templates) {
-					List<ReportLine> lines = dao.findReportLine(template, task.getProjectId(),
-							task.getReportStartTime(), task.getReportEndTime());
+					List<ReportLine> lines = dao.findReportLine(template,
+							task.getProjectId(), task.getReportStartTime(),
+							task.getReportEndTime());
 					allReportData.put(template, lines);
 				}
 
 				if (writeToFile(allReportData)) {
 					// mark end
 					task.setStatus(Status.generated.toString());
-	                task.setGenEndTime(new Date());
+					task.setGenEndTime(new Date());
 					dao.save(task);
-					logger.info("end generation for task : task id " + task.getId() + " . For project " + task.getProjectName() + ". File write at $PJM_HOME/" + task.getGen_path());
+					logger.info("end generation for task : task id "
+							+ task.getId() + " . For project "
+							+ task.getProjectName()
+							+ ". File write at $PJM_HOME/" + task.getGen_path());
 				} else {
-				    logger.info("end generation for task : Generation failed : " + task.getId() + " . For project " + task.getProjectName());
-                    task.setGenEndTime(new Date());
-                    task.addGen_count();
-                    dao.save(task);
+					logger.info("end generation for task : Generation failed : "
+							+ task.getId()
+							+ " . For project "
+							+ task.getProjectName());
+					task.setGenEndTime(new Date());
+					dao.save(task);
 				}
 			} catch (Exception e) {
 				logger.error("Generation failed!", e);
@@ -154,6 +162,7 @@ public class ReportGenerator {
 				try {
 					task.addGen_count();
 					dao.save(task);
+					logger.info("update task!");
 				} catch (Throwable t) {
 					// ignore
 					logger.warn("fail to increase gen-count for task" + task.getId(), t);

@@ -15,7 +15,6 @@ import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.pjm2.report.db.model.ReportTask;
 import org.pjm2.report.db.model.ReportTask.Status;
 import org.pjm2.report.db.model.ReportTemplate;
@@ -37,7 +36,7 @@ public class Dao {
 	public 	static final String WEIBO_TEMPLATE_TYPE = "微博类模板";
 	public 	static final String BLOG_TEMPLATE_TYPE = "博客类模板";
 	public  static final String FORUM_TEMPLATE_TYPE = "论坛类模板";
-	public  static final Integer MAX_GENERATION_COUNT = 6;
+	public  static final Integer MAX_GENERATION_COUNT = 60;
 
 	private static Logger logger = LoggerFactory.getLogger(Dao.class);
 
@@ -82,31 +81,35 @@ public class Dao {
 	@SuppressWarnings("unchecked")
 	public List<ReportTask> findTODOTasks() {
 		String sql = "select * from report_tasks where status in ('%s', '%s') and ( gen_count IS NULL or gen_count <= %d )";
-        sql = String.format(sql, Status.planned, Status.inprogress, MAX_GENERATION_COUNT);
+		sql = String.format(sql, Status.planned, Status.inprogress,
+				MAX_GENERATION_COUNT);
 		Query query = manager.createNativeQuery(sql, ReportTask.class);
 		List<?> result = query.getResultList();
 		List<ReportTask> tasks = (List<ReportTask>) result;
-		
+
+		StringBuffer idSbs = new StringBuffer();
 		// fill project identifier
-        if (!tasks.isEmpty()) {
-            List<Long> pId = new ArrayList<Long>();
-            for (ReportTask task : tasks) {
-                pId.add(task.getProjectId());
-            }
-            Map<Long, String> projects = new HashMap<Long, String>();
-            sql = "select id, name from projects where id in ( %s )";
-            query = manager.createNativeQuery(String.format(sql, StringUtils.join(pId, ',')));
-            result = query.getResultList();
-            for (Object o : result) {
-                Object[] objs = (Object[]) o;
-                projects.put(((Number) objs[0]).longValue(), objs[1].toString());
-            }
-            for (ReportTask t : tasks) {
-                t.setProjectName(projects.get(t.getProjectId()));
-            }
-        }
-		
-		logger.info("Find " + tasks.size() + " tasks! :: " + ToStringBuilder.reflectionToString(tasks));
+		if (!tasks.isEmpty()) {
+			List<Long> pId = new ArrayList<Long>();
+			for (ReportTask task : tasks) {
+				pId.add(task.getProjectId());
+			}
+			Map<Long, String> projects = new HashMap<Long, String>();
+			sql = "select id, name from projects where id in ( %s )";
+			query = manager.createNativeQuery(String.format(sql,
+					StringUtils.join(pId, ',')));
+			result = query.getResultList();
+			for (Object o : result) {
+				Object[] objs = (Object[]) o;
+				projects.put(((Number) objs[0]).longValue(), objs[1].toString());
+			}
+			for (ReportTask t : tasks) {
+				t.setProjectName(projects.get(t.getProjectId()));
+				idSbs.append(t.getId().toString()).append(",");
+			}
+		}
+
+		logger.info("Find " + tasks.size() + " tasks! :: " + idSbs);
 		return tasks;
 	}
 
