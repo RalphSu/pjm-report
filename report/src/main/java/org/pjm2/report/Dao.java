@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.CacheRetrieveMode;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -17,7 +16,6 @@ import javax.persistence.Query;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.CacheMode;
-import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.QueryHints;
 import org.pjm2.report.db.model.ReportTask;
 import org.pjm2.report.db.model.ReportTask.Status;
@@ -40,7 +38,7 @@ public class Dao {
 	public 	static final String WEIBO_TEMPLATE_TYPE = "微博类模板";
 	public 	static final String BLOG_TEMPLATE_TYPE = "博客类模板";
 	public  static final String FORUM_TEMPLATE_TYPE = "论坛类模板";
-	public  static final Integer MAX_GENERATION_COUNT = 60;
+	public  static final Integer MAX_GENERATION_COUNT = 10;
 
 	private static Logger logger = LoggerFactory.getLogger(Dao.class);
 

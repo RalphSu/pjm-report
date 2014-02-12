@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 public class ReportGenerator {
 
 	private static final Logger logger = LoggerFactory.getLogger(ReportGenerator.class);
-	private volatile boolean stop = false;
+//	private volatile boolean stop = false;
 	private final Dao dao;
 
 	// daemon thread factory
@@ -58,32 +58,37 @@ public class ReportGenerator {
     }
 
 	public void startLoop() {
-		stop = false;
+//		stop = false;
 
-		while (!stop) {
-			try {
+//		while (!stop) {
+//			try {
 				List<Job> jobs = getJobs();
 				logger.info("get jobs @ " + new Date() + " with job size " + jobs.size());
 				// submit jobs
 				for (Job job : jobs) {
-					runningTaskId.put(job.task.getId(), job);
-					executors.submit(job);
+					try {
+						runningTaskId.put(job.task.getId(), job);
+						job.run();
+//						executors.submit(job);
+					} catch (Throwable t) {
+						logger.error("report genration encounter an error! catch and log this, then continue running!");
+					}
 				}
-				slientWait();
-			} catch (Throwable t) {
-				logger.error("report genration encounter an error! catch and log this, then continue running!");
-			}
-		}
+//				slientWait();
+//			} catch (Throwable t) {
+//				logger.error("report genration encounter an error! catch and log this, then continue running!");
+//			}
+//		}
 	}
 
-	private void slientWait() {
-		try {
-			// current no job, sleep for 10 minutes
-			Thread.sleep(1000 * 60 * 5);
-		} catch (InterruptedException e) {
-			logger.info("Generate wait!", e);
-		}
-	}
+//	private void slientWait() {
+//		try {
+//			// current no job, sleep for 10 minutes
+//			Thread.sleep(1000 * 60 * 5);
+//		} catch (InterruptedException e) {
+//			logger.info("Generate wait!", e);
+//		}
+//	}
 
 	private List<Job> getJobs() {
         try {
@@ -100,7 +105,7 @@ public class ReportGenerator {
 	}
 
 	public void stopLoop() {
-		stop = true;
+//		stop = true;
 		try {
 			executors.shutdown();
 			executors.awaitTermination(3, TimeUnit.MINUTES);
