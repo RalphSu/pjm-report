@@ -657,26 +657,38 @@ public class ReportPOIWriter {
 		for (int i = 0; i < headers.size(); i++) {
 			headerCells.get(i).setText(headers.get(i));
 			headerCells.get(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
-		}
+        }
 
+        // set value to the table cells
         Set<String> imagePaths = new HashSet<String>();
+        final String[] IMAGE = new String[] { "链接", "日期" };
+        int link_index = headers.indexOf(IMAGE[0]);
+        int date_index = headers.indexOf(IMAGE[1]);
 		final int LINE_SIZE = lines.size();
 		for (int j = 1; j < LINE_SIZE; j++) {
 			ReportLine line = lines.get(j);
 			XWPFTableRow row = table.getRow(j);
+			// fill one line
 			for (int i = 0; i < headers.size(); i++) {
 				Object obj = line.getColumns().get(headers.get(i));
 				if (obj != null) {
 					String body = obj.toString();
                     row.getCell(i).setText(body);
-                    // find matched image if any
-                    List<String> path = dao.findImagePathByUrl(body);
-                    imagePaths.addAll(path);
 				} else {
 					row.getCell(i).setText("");
 				}
 				row.getCell(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
 			}
+
+            // find matched image for each line if any by matching the url and the date
+            if (link_index >= 0 && date_index >= 0) {
+                Object link_obj = line.getColumns().get(link_index);
+                Object date_obj = line.getColumns().get(date_index);
+                if (link_obj != null && date_obj != null) {
+                    List<String> path = dao.findImagePathByUrl(link_obj.toString(), date_obj.toString());
+                    imagePaths.addAll(path);
+                }
+            }
 		}
 
 		// picture
@@ -684,6 +696,7 @@ public class ReportPOIWriter {
 	}
 
 	private void writeModuleImage(CustomXWPFDocument doc, Set<String> imagePaths) {
+	    // TODO
 	    logger.info("start write image for module... ");
         for (String path : imagePaths) {
             FileInputStream fis = null;
