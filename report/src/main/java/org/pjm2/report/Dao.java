@@ -178,7 +178,7 @@ public class Dao {
     public List<String> findImagePathByUrl(String body, String date) {
         List<String> paths = new ArrayList<String>();
         try {
-            String sql = "select file_path from images where url = '%s' and date = '%s' ";
+            String sql = "select file_path from images where url = '%s' and image_date = '%s' ";
             Query query = manager.createNativeQuery(String.format(sql, body, date));
             query.setHint(QueryHints.HINT_CACHE_MODE, CacheMode.IGNORE);
             List<?> sqlResult = query.getResultList();

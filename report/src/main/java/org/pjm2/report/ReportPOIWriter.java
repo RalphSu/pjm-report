@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.TextAlignment;
@@ -661,9 +662,9 @@ public class ReportPOIWriter {
 
         // set value to the table cells
         Set<String> imagePaths = new HashSet<String>();
-        final String[] IMAGE = new String[] { "链接", "日期" };
-        int link_index = headers.indexOf(IMAGE[0]);
-        int date_index = headers.indexOf(IMAGE[1]);
+        final String[] IMAGE_FIELDS = new String[] { "链接", "日期" };
+        int link_index = headers.indexOf(IMAGE_FIELDS[0]);
+        int date_index = headers.indexOf(IMAGE_FIELDS[1]);
 		final int LINE_SIZE = lines.size();
 		for (int j = 1; j < LINE_SIZE; j++) {
 			ReportLine line = lines.get(j);
@@ -682,8 +683,8 @@ public class ReportPOIWriter {
 
             // find matched image for each line if any by matching the url and the date
             if (link_index >= 0 && date_index >= 0) {
-                Object link_obj = line.getColumns().get(link_index);
-                Object date_obj = line.getColumns().get(date_index);
+                Object link_obj = line.getColumns().get(IMAGE_FIELDS[0]);
+                Object date_obj = line.getColumns().get(IMAGE_FIELDS[1]);
                 if (link_obj != null && date_obj != null) {
                     List<String> path = dao.findImagePathByUrl(link_obj.toString(), date_obj.toString());
                     imagePaths.addAll(path);
@@ -692,46 +693,66 @@ public class ReportPOIWriter {
 		}
 
 		// picture
+		logger.info(String.format(" for report tempalte %s, classified %s,  report image paths are %s", template.getTemplate_type(),
+				template.getClassified(), StringUtils.join(imagePaths, "\n")));
 		writeModuleImage(doc, imagePaths);
 	}
 
 	private void writeModuleImage(CustomXWPFDocument doc, Set<String> imagePaths) {
-	    // TODO
-	    logger.info("start write image for module... ");
-        for (String path : imagePaths) {
-            FileInputStream fis = null;
-            // detect extension
-            int index = path.lastIndexOf('.');
-            int fileType = XWPFDocument.PICTURE_TYPE_PNG;
-            if (index >=0) {
-                String ext = path.substring(index);
-                ext = ext.toUpperCase();
-                if (ext.endsWith("JPEG") ) {
-                    fileType = XWPFDocument.PICTURE_TYPE_JPEG;
-                } else if (ext.endsWith("BMP")) {
-                    fileType = XWPFDocument.PICTURE_TYPE_BMP;
-                } else if (ext.endsWith("GIF")) {
-                    fileType = XWPFDocument.PICTURE_TYPE_GIF;
-                }
-            }
-            
-            try {
-                fis = new FileInputStream(path);
-                doc.addPictureData(fis, fileType);
-                doc.createPicture(doc.getAllPictures().size() - 1, CHART_WIDTH, CHART_HEIGHT);
-            } catch (Throwable t) {
-                logger.error("write module image failed. Path is " + path, t);
-            } finally {
-                if (fis != null) {
-                    try {
-                        fis.close();
-                    } catch (Exception e) {
-                        // ignore
-                        logger.warn("close failure", e);
-                    }
-                }
-            }
-        }
+		logger.info("start write image for module... ");
+		String prefix = System.getenv("PJM_HOME");
+		if (prefix == null)
+			prefix = System.getProperty("PJM_HOME");
+		if (prefix == null)
+			prefix = " ../../pjm2/";
+		
+		System.out.println("prefix is " + prefix);
+		for (String combinedPath : imagePaths) {
+			logger.info(" find a combinbed image path: " + combinedPath);
+			if (combinedPath == null ){
+				continue;
+			}
+			String[] paths = StringUtils.split(combinedPath, ";");
+			
+			for (String path : paths) {
+				FileInputStream fis = null;
+				// detect extension
+				int index = path.lastIndexOf('.');
+				int fileType = XWPFDocument.PICTURE_TYPE_PNG;
+				if (index >= 0) {
+					String ext = path.substring(index);
+					ext = ext.toUpperCase();
+					if (ext.endsWith("JPEG")) {
+						fileType = XWPFDocument.PICTURE_TYPE_JPEG;
+					} else if (ext.endsWith("BMP")) {
+						fileType = XWPFDocument.PICTURE_TYPE_BMP;
+					} else if (ext.endsWith("GIF")) {
+						fileType = XWPFDocument.PICTURE_TYPE_GIF;
+					}
+				}
+				
+				path = prefix + "/" + path;
+				logger.info(" full image file_path is " + path);
+				try {
+					fis = new FileInputStream(path);
+					doc.addPictureData(fis, fileType);
+					doc.createPicture(doc.getAllPictures().size() - 1,
+							CHART_WIDTH, CHART_HEIGHT);
+				} catch (Throwable t) {
+					logger.error("write module image failed. Path is " + path,
+							t);
+				} finally {
+					if (fis != null) {
+						try {
+							fis.close();
+						} catch (Exception e) {
+							// ignore
+							logger.warn("close failure", e);
+						}
+					}
+				}
+			}
+		}
     }
 
     private Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> shuffle(Map<ReportTemplate, List<ReportLine>> reportData) {
