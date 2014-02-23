@@ -9,7 +9,6 @@ import javax.persistence.Persistence;
 
 import junit.framework.TestCase;
 
-import org.hibernate.cfg.Environment;
 import org.pjm2.report.db.model.ReportTask;
 
 public class TestEntityLoad extends TestCase {
@@ -24,9 +23,6 @@ public class TestEntityLoad extends TestCase {
 
 		try {
 			Map<String, String> props = new HashMap<String, String>();
-			props.put(Environment.USER, "chiliproject");
-			props.put(Environment.PASS, "chili");
-			props.put(Environment.URL, "jdbc:mysql://localhost:3306/chiliproject");
 			EntityManagerFactory sf = Persistence.createEntityManagerFactory("pjmUnit", props);
 			
 			dao.setEntityManagerFactory(sf);
