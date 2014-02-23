@@ -132,9 +132,52 @@ public class ReportPOIWriter {
 			}
 			
 			Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = shuffle(reportData);
-			for (Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e : sortedData.entrySet()) {
-				writeTemplateType(doc, e);
+			{
+				String key ="新闻类模板";
+				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
+				if(data!=null){
+					writeTemplateType(doc, key,data);
+				}
 			}
+			{
+				String key ="微博类模板";
+				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
+				if(data!=null){
+					writeTemplateType(doc, key,data);
+				}
+			}
+			{
+				String key ="微信类模板";
+				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
+				if(data!=null){
+					writeTemplateType(doc, key,data);
+				}
+			}
+			{
+				String key ="博客类模板";
+				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
+				if(data!=null){
+					writeTemplateType(doc, key,data);
+				}
+			}
+			{
+				String key ="论坛类模板";
+				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
+				if(data!=null){
+					writeTemplateType(doc, key,data);
+				}
+			}
+			{
+				String key ="汇总数据模板";
+				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
+				if(data!=null){
+					writeTemplateType(doc, key,data);
+				}
+			}
+			
+//			for (Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e : sortedData.entrySet()) {
+//				writeTemplateType(doc, e);
+//			}
 			
 				writeImageAnaylysis(doc,reportData);	
 			
@@ -204,6 +247,25 @@ public class ReportPOIWriter {
 
 		int i = 0;
 		for (Entry<ReportTemplate, List<ReportLine>> module : e.getValue()) {
+			i++;
+			writeModule(doc, i, module.getKey(), module.getValue());
+		}
+
+		
+	}
+	
+	private void writeTemplateType(CustomXWPFDocument doc, String key,List<Entry<ReportTemplate, List<ReportLine>>> data) {
+		XWPFParagraph templateParagraph = doc.createParagraph();
+//		templateParagraph.setAlignment(ParagraphAlignment.LEFT);
+//		templateParagraph.setVerticalAlignment(TextAlignment.CENTER);
+		templateParagraph.setStyle("Heading1");
+		XWPFRun templateRun = templateParagraph.createRun();
+		templateRun.setFontSize(20);
+		templateRun.setText(key.substring(0, key.length() - 2)); // assume last two word is "模板"
+//		templateRun.setBold(true);
+
+		int i = 0;
+		for (Entry<ReportTemplate, List<ReportLine>> module : data) {
 			i++;
 			writeModule(doc, i, module.getKey(), module.getValue());
 		}
@@ -641,6 +703,11 @@ public class ReportPOIWriter {
 		moduleName.setBold(false);
 		moduleName.setFontSize(14);
 		moduleName.setText(template.getClassified());
+		
+		XWPFParagraph labelParagraph = doc.createParagraph();
+		XWPFRun moduleNumber = labelParagraph.createRun();
+		moduleNumber.setFontSize(10);
+		moduleNumber.setText("共计"+lines.size()+"条");
 
 		// table
 		List<String> headers = template.getColumnHeaders();
