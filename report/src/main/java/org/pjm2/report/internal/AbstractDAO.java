@@ -14,6 +14,7 @@ import javax.persistence.Query;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.CacheMode;
 import org.hibernate.jpa.QueryHints;
+import org.pjm2.report.Dao;
 import org.pjm2.report.db.model.ReportTemplate;
 import org.pjm2.report.model.ReportLine;
 
@@ -44,7 +45,13 @@ public abstract class AbstractDAO  implements IEntityDao {
 			String start = AbstractDAO.parseDateValue(starTime);
 			String end = AbstractDAO.parseDateValue(endTime);
 			StringBuilder sql = new StringBuilder(getItemByDateSql());
-			sql.append(" and n.project_id = ").append(pid);
+			if(template.getTemplate_type().equals(Dao.WEIBO_TEMPLATE_TYPE)||
+					template.getTemplate_type().equals(Dao.SUMMARY_TEMPLATE_TYPE)){
+				sql.append(" and n.projects_id = ").append(pid);
+			}else{
+				sql.append(" and n.project_id = ").append(pid);
+			}
+			
 			if (start != null) {
 				sql.append(" and f.body >= '").append(start).append("'");
 			}
@@ -55,7 +62,13 @@ public abstract class AbstractDAO  implements IEntityDao {
 			ids = query.getResultList();
 		} else {
 			StringBuilder sql = new StringBuilder(getItemByClassifieldSql());
-			sql.append(" and n.project_id = ").append(pid);
+			if(template.getTemplate_type().equals(Dao.WEIBO_TEMPLATE_TYPE)||
+					template.getTemplate_type().equals(Dao.SUMMARY_TEMPLATE_TYPE)){
+				sql.append(" and n.projects_id = ").append(pid);
+			}else{
+				sql.append(" and n.project_id = ").append(pid);
+			}
+			
 			Query query = manager.createNativeQuery(String.format(sql.toString(), template.getClassified()));
 			ids = query.getResultList();
 		}
