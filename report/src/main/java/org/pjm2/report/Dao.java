@@ -24,7 +24,9 @@ import org.pjm2.report.internal.BlogDao;
 import org.pjm2.report.internal.ForumDao;
 import org.pjm2.report.internal.IEntityDao;
 import org.pjm2.report.internal.NewsDao;
+import org.pjm2.report.internal.SummaryDao;
 import org.pjm2.report.internal.WeiboDao;
+import org.pjm2.report.internal.WeixinDao;
 import org.pjm2.report.model.ReportLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,8 @@ public class Dao {
 	public 	static final String WEIBO_TEMPLATE_TYPE = "微博类模板";
 	public 	static final String BLOG_TEMPLATE_TYPE = "博客类模板";
 	public  static final String FORUM_TEMPLATE_TYPE = "论坛类模板";
+	public  static final String WEIXIN_TEMPLATE_TYPE = "微信类模板";
+	public  static final String SUMMARY_TEMPLATE_TYPE = "汇总数据类模板";
 	public  static final Integer MAX_GENERATION_COUNT = 10;
 
 	private static Logger logger = LoggerFactory.getLogger(Dao.class);
@@ -72,6 +76,10 @@ public class Dao {
 		daos.put(FORUM_TEMPLATE_TYPE, dao);
 		dao = new WeiboDao(manager);
 		daos.put(WEIBO_TEMPLATE_TYPE, dao);
+		dao = new WeixinDao(manager);
+		daos.put(WEIXIN_TEMPLATE_TYPE, dao);
+		dao = new SummaryDao(manager);
+		daos.put(SUMMARY_TEMPLATE_TYPE, dao);
 	}
 	
 	// for test only

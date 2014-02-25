@@ -707,7 +707,8 @@ public class ReportPOIWriter {
 		XWPFParagraph labelParagraph = doc.createParagraph();
 		XWPFRun moduleNumber = labelParagraph.createRun();
 		moduleNumber.setFontSize(10);
-		moduleNumber.setText("共计"+lines.size()+"条");
+		logger.info(String.format(" for report tempalte %s, classified %s, size are %s", template.getTemplate_type(),
+				template.getClassified(),lines.size()-1));
 
 		// table
 		List<String> headers = template.getColumnHeaders();
@@ -733,6 +734,8 @@ public class ReportPOIWriter {
         int link_index = headers.indexOf(IMAGE_FIELDS[0]);
         int date_index = headers.indexOf(IMAGE_FIELDS[1]);
 		final int LINE_SIZE = lines.size();
+		int number_1=0;
+		int number_2=0;
 		for (int j = 1; j < LINE_SIZE; j++) {
 			ReportLine line = lines.get(j);
 			XWPFTableRow row = table.getRow(j);
@@ -742,12 +745,28 @@ public class ReportPOIWriter {
 				if (obj != null) {
 					String body = obj.toString();
                     row.getCell(i).setText(body);
+                    if("转发数".equalsIgnoreCase(headers.get(i))){
+                    	try{
+                    		int m = Integer.parseInt(body);
+                    		number_1+=m;
+                    	}catch(Exception e){
+                    		logger.error("parse number error "+body+e.getMessage());
+                    	}
+                    }else if ("评论数".equalsIgnoreCase(headers.get(i))){
+                    	try{
+                    		int m = Integer.parseInt(body);
+                    		number_2+=m;
+                    	}catch(Exception e){
+                    		logger.error("parse number error "+body+e.getMessage());
+                    	}
+                    }
 				} else {
 					row.getCell(i).setText("");
 				}
 				row.getCell(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
 			}
 
+			
             // find matched image for each line if any by matching the url and the date
             if (link_index >= 0 && date_index >= 0) {
                 Object link_obj = line.getColumns().get(IMAGE_FIELDS[0]);
@@ -758,7 +777,14 @@ public class ReportPOIWriter {
                 }
             }
 		}
-
+		String msg = "共计"+(lines.size()-1)+"条";
+		if(number_1>0){
+			msg+=";转发条数:"+number_1;
+		}
+		if(number_2>0){
+			msg+=";评论条数:"+number_2;
+		}
+		moduleNumber.setText(msg);
 		// picture
 		logger.info(String.format(" for report tempalte %s, classified %s,  report image paths are %s", template.getTemplate_type(),
 				template.getClassified(), StringUtils.join(imagePaths, "\n")));
