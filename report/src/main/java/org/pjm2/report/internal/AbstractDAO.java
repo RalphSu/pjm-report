@@ -45,7 +45,7 @@ public abstract class AbstractDAO  implements IEntityDao {
 			String start = AbstractDAO.parseDateValue(starTime);
 			String end = AbstractDAO.parseDateValue(endTime);
 			StringBuilder sql = new StringBuilder(getItemByDateSql());
-			if(template.getTemplate_type().equals(Dao.WEIBO_TEMPLATE_TYPE)||
+			if(template.getTemplate_type().equals(Dao.WEIXIN_TEMPLATE_TYPE)||
 					template.getTemplate_type().equals(Dao.SUMMARY_TEMPLATE_TYPE)){
 				sql.append(" and n.projects_id = ").append(pid);
 			}else{
@@ -62,7 +62,7 @@ public abstract class AbstractDAO  implements IEntityDao {
 			ids = query.getResultList();
 		} else {
 			StringBuilder sql = new StringBuilder(getItemByClassifieldSql());
-			if(template.getTemplate_type().equals(Dao.WEIBO_TEMPLATE_TYPE)||
+			if(template.getTemplate_type().equals(Dao.WEIXIN_TEMPLATE_TYPE)||
 					template.getTemplate_type().equals(Dao.SUMMARY_TEMPLATE_TYPE)){
 				sql.append(" and n.projects_id = ").append(pid);
 			}else{
