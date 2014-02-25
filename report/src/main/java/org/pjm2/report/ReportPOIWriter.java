@@ -739,7 +739,7 @@ public class ReportPOIWriter {
 		int number_2=0;
 		for (int j = 0; j < LINE_SIZE; j++) {
 			ReportLine line = lines.get(j);
-			XWPFTableRow row = table.getRow(j);
+			XWPFTableRow row = table.getRow(j+1);
 			// fill one line
 			for (int i = 0; i < headers.size(); i++) {
 				Object obj = line.getColumns().get(headers.get(i));
