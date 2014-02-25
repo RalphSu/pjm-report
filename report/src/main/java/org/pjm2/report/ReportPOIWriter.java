@@ -707,12 +707,9 @@ public class ReportPOIWriter {
 		XWPFParagraph labelParagraph = doc.createParagraph();
 		XWPFRun moduleNumber = labelParagraph.createRun();
 		moduleNumber.setFontSize(10);
-		int totalnumber = lines.size()-1;
-		if (totalnumber<0){
-			totalnumber=0;
-		}
+		
 		logger.info(String.format(" for report tempalte %s, classified %s, size are %s", template.getTemplate_type(),
-				template.getClassified(),totalnumber));
+				template.getClassified(),lines.size()));
 
 		// table
 		List<String> headers = template.getColumnHeaders();
@@ -740,7 +737,7 @@ public class ReportPOIWriter {
 		final int LINE_SIZE = lines.size();
 		int number_1=0;
 		int number_2=0;
-		for (int j = 1; j < LINE_SIZE; j++) {
+		for (int j = 0; j < LINE_SIZE; j++) {
 			ReportLine line = lines.get(j);
 			XWPFTableRow row = table.getRow(j);
 			// fill one line
@@ -781,7 +778,7 @@ public class ReportPOIWriter {
                 }
             }
 		}
-		String msg = "共计"+totalnumber+"条";
+		String msg = "共计"+lines.size()+"条";
 		if(number_1>0){
 			msg+=";转发条数:"+number_1;
 		}
