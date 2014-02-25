@@ -23,7 +23,7 @@ public class SummaryDao extends AbstractDAO {
 
 	
 	protected String getDateFieldSql() {
-		return "select c.id from summary_fields as c, templates as t where c.classified = '%s' and c.template_id = t.id and t.column_name='日期'";
+		return "select c.id from summary_classifieds as c, templates as t where c.classified = '%s' and c.template_id = t.id and t.column_name='日期'";
 	}
 
 	@Override
