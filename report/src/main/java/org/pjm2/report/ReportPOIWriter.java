@@ -30,15 +30,20 @@ import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.POIXMLDocumentPart;
 import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.TextAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFFactory;
+import org.apache.poi.xwpf.usermodel.XWPFHyperlink;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRelation;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+import org.apache.xmlbeans.SchemaType;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -728,7 +733,7 @@ public class ReportPOIWriter {
 			headerCells.get(i).setText(headers.get(i));
 			headerCells.get(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
         }
-
+		int splitnumber = 360/headerCells.size();
         // set value to the table cells
         Set<String> imagePaths = new HashSet<String>();
         final String[] IMAGE_FIELDS = new String[] { "链接", "日期" };
@@ -745,7 +750,24 @@ public class ReportPOIWriter {
 				Object obj = line.getColumns().get(headers.get(i));
 				if (obj != null) {
 					String body = obj.toString();
-                    row.getCell(i).setText(body);
+					if("链接".equalsIgnoreCase(headers.get(i))){
+						if(body.length()>splitnumber){
+						  String part1=body.substring(0,splitnumber);
+						  part1+="\r\n";
+						  String part2=body.substring(splitnumber);
+						  row.getCell(i).setText(part1+part2);
+						}
+					}
+					else{
+						row.getCell(i).setText(body);
+					}
+					
+//					POIXMLDocumentPart cellPart = row.getCell(i).getPart();
+////					POIXMLDocumentPart rel = cellPart.createRelationship(XWPFRelation.HYPERLINK, XWPFFactory.getInstance());
+////					
+//					XWPFParagraph paragraph = row.getCell(i).getParagraphArray(0);
+//					XWPFRun run = paragraph.createRun();
+				
                     if("转发数".equalsIgnoreCase(headers.get(i))){
                     	try{
                     		int m = Integer.parseInt(body);
@@ -903,11 +925,24 @@ public class ReportPOIWriter {
     		ReportTemplate reportTemplate = new ReportTemplate();
     		reportTemplate.setClassified("新闻稿发布");
     		reportTemplate.setTemplate_type(Dao.NEWS_TEMPLATE_TYPE);
+    		reportTemplate.setColumnHeaders(new ArrayList<String>());
+    		reportTemplate.getColumnHeaders().add("发布平台");
+    		reportTemplate.getColumnHeaders().add("链接");
+    		reportTemplate.getColumnHeaders().add("日期");
+    		reportTemplate.getColumnHeaders().add("标题");
+    		reportTemplate.getColumnHeaders().add("推荐位置");
+    		reportTemplate.getColumnHeaders().add("排名 ");
+
     		List<ReportLine> line1 = new ArrayList<ReportLine>();
         	for(int m=0;m<80;m++){
         		ReportLine line =  new ReportLine();
         		line.setColumns(new HashMap<String, Object>());
         		line.getColumns().put("发布平台", "人民网");
+        		line.getColumns().put("链接", "http://www.dzwww.com/yule/yulezhuanti/mtcbg/201402/t20140211_9375824.htm");
+        		line.getColumns().put("日期", "2013-12-12");
+        		line.getColumns().put("标题", "《汉字英雄》第二季苦情学霸张政竟敢讽刺马东？这是作死的节奏吗？");
+        		line.getColumns().put("推荐位置", "首页");
+        	
         		line1.add(line);	
         	}
         	for(int m=0;m<60;m++){
