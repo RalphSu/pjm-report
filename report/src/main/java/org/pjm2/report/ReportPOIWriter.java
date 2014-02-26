@@ -719,8 +719,20 @@ public class ReportPOIWriter {
 		// table
 		List<String> headers = template.getColumnHeaders();
 		List<Integer> widths = new ArrayList<Integer>(headers.size());
+		int base=50;
+		if(headers.size()!=0){
+			base=300/headers.size();	
+		}
+		
+		
 		for (int i = 0; i < headers.size(); i++ ){
-			widths.add(60);
+			int columnwidth=base;
+			if("标题".equalsIgnoreCase(headers.get(i))){
+				columnwidth+=10;
+			}else if("链接".equalsIgnoreCase(headers.get(i))){
+				columnwidth+=20;
+			}
+			widths.add(columnwidth);
 		}
 		XWPFTable table = doc.createTable(lines.size() + 1, headers.size());
 		CTTblWidth width = table.getCTTbl().addNewTblPr().addNewTblW();
@@ -733,7 +745,7 @@ public class ReportPOIWriter {
 			headerCells.get(i).setText(headers.get(i));
 			headerCells.get(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
         }
-		int splitnumber = 360/headerCells.size();
+		int splitnumber = 300/headerCells.size();
         // set value to the table cells
         Set<String> imagePaths = new HashSet<String>();
         final String[] IMAGE_FIELDS = new String[] { "链接", "日期" };
