@@ -745,9 +745,9 @@ public class ReportPOIWriter {
 			headerCells.get(i).setText(headers.get(i));
 			headerCells.get(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
         }
-		int splitnumber = 300/headerCells.size();
-		if(splitnumber>50)
-			splitnumber=50;
+		int splitnumber = 160/headerCells.size();
+		if(splitnumber>40)
+			splitnumber=40;
         // set value to the table cells
         Set<String> imagePaths = new HashSet<String>();
         final String[] IMAGE_FIELDS = new String[] { "链接", "日期" };
@@ -767,8 +767,17 @@ public class ReportPOIWriter {
 					if("链接".equalsIgnoreCase(headers.get(i))){
 						if(body.length()>splitnumber){
 						  String part1=body.substring(0,splitnumber);
-						 
-						  row.getCell(i).setText(part1);
+						  part1+="\r\n";
+						  String part2 = body.substring(splitnumber);
+						  if(part2.length()>splitnumber){
+							  String part2_1=part2.substring(0,splitnumber);
+							  part2_1+="\r\n";
+							  String part2_2 = part2.substring(splitnumber);
+							  row.getCell(i).setText(part1+part2_1+part2_2);
+						  }else{
+							  row.getCell(i).setText(part1+part2);  
+						  }
+						  
 						}
 					}
 					else{
