@@ -761,9 +761,9 @@ public class ReportPOIWriter {
 		XWPFTable table = doc.createTable(lines.size() + 1, headers.size());
 		CTTblWidth width = table.getCTTbl().addNewTblPr().addNewTblW();
 		width.setType(STTblWidth.DXA);
-//		width.setW(BigInteger.valueOf(3500));
+		width.setW(BigInteger.valueOf(8000));
 		// 设置上下左右四个方向的距离，可以将表格撑	
-		table.setCellMargins(20, 20, 20, 20);
+//		table.setCellMargins(20, 20, 20, 20);
 		XWPFTableRow headRow = table.getRow(0);
 		List<XWPFTableCell> headerCells = headRow.getTableCells();
 		for (int i = 0; i < headers.size(); i++) {
