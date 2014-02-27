@@ -137,9 +137,15 @@ public class ReportPOIWriter {
 //					title1.setFontFamily("微软雅黑");
 					SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日");
 					String startDate = format.format(task.getReportStartTime());
-					String endDate = format.format(task.getReportEndTime());
 					if(type=="周报"){
-						title2.setText(String.format("（%s - %s）", startDate, endDate));
+						if(task.getReportEndTime()!=null){
+							String endDate = format.format(task.getReportEndTime());
+							
+							title2.setText(String.format("（%s - %s）", startDate, endDate));
+						}else{
+							title2.setText(String.format("(%s) ", startDate));
+						}
+						
 					}else{
 						title2.setText(String.format("(%s) ", startDate));
 					}
@@ -755,8 +761,9 @@ public class ReportPOIWriter {
 		XWPFTable table = doc.createTable(lines.size() + 1, headers.size());
 		CTTblWidth width = table.getCTTbl().addNewTblPr().addNewTblW();
 		width.setType(STTblWidth.DXA);
-		width.setW(BigInteger.valueOf(3500));
-		// 设置上下左右四个方向的距离，可以将表格撑	table.setCellMargins(20, 20, 20, 20);
+//		width.setW(BigInteger.valueOf(3500));
+		// 设置上下左右四个方向的距离，可以将表格撑	
+		table.setCellMargins(20, 20, 20, 20);
 		XWPFTableRow headRow = table.getRow(0);
 		List<XWPFTableCell> headerCells = headRow.getTableCells();
 		for (int i = 0; i < headers.size(); i++) {
@@ -920,6 +927,7 @@ public class ReportPOIWriter {
 					doc.addPictureData(fis, fileType);
 					doc.createPicture(doc.getAllPictures().size() - 1,
 							CHART_WIDTH, CHART_HEIGHT);
+					
 				} catch (Throwable t) {
 					logger.error("write module image failed. Path is " + path,
 							t);
