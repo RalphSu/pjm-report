@@ -4,6 +4,7 @@
 package org.pjm2.report;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -130,7 +131,6 @@ public class ReportGenerator {
 				task.setStatus(Status.inprogress.toString());
 				task.setGenStartTime(new Date());
 				dao.save(task);
-
 				// on-progress
 				List<ReportTemplate> templates = dao.findReportTemplates(task
 						.getProjectId());

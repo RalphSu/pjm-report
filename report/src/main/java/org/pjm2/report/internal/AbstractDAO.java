@@ -113,7 +113,7 @@ public abstract class AbstractDAO  implements IEntityDao {
 		if (d == null) {
 			return null;
 		}
-		SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");
 		return sdf.format(d);
 	}
 

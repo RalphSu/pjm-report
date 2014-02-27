@@ -119,15 +119,33 @@ public class ReportPOIWriter {
 						task.getTaskType())) {
 					type = "结案报告";
 				}
-				XWPFRun title1 = p2.createRun();
-				p2.setAlignment(ParagraphAlignment.CENTER);
-				p2.setVerticalAlignment(TextAlignment.TOP);
-				title1.setBold(false);
-				title1.setFontSize(14);
-//				title1.setFontFamily("微软雅黑");
-				SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日");
-				String startDate = format.format(task.getReportStartTime());
-				title1.setText(String.format("（%s - %s）", startDate, type));
+				{
+					XWPFRun title1 = p2.createRun();
+					p2.setAlignment(ParagraphAlignment.CENTER);
+					p2.setVerticalAlignment(TextAlignment.TOP);
+					title1.setBold(false);
+					title1.setFontSize(14);
+					title1.setText(type);
+				}
+
+				{
+					XWPFRun title2 = p2.createRun();
+					p2.setAlignment(ParagraphAlignment.CENTER);
+					p2.setVerticalAlignment(TextAlignment.TOP);
+					title2.setBold(false);
+					title2.setFontSize(14);
+//					title1.setFontFamily("微软雅黑");
+					SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日");
+					String startDate = format.format(task.getReportStartTime());
+					String endDate = format.format(task.getReportEndTime());
+					if(type=="周报"){
+						title2.setText(String.format("（%s - %s）", startDate, endDate));
+					}else{
+						title2.setText(String.format("(%s) ", startDate));
+					}
+					
+				}
+
 			}
 
 			// insert a page break
@@ -173,7 +191,7 @@ public class ReportPOIWriter {
 				}
 			}
 			{
-				String key ="汇总数据模板";
+				String key ="汇总数据类模板";
 				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
 				if(data!=null){
 					writeTemplateType(doc, key,data);
@@ -737,8 +755,8 @@ public class ReportPOIWriter {
 		XWPFTable table = doc.createTable(lines.size() + 1, headers.size());
 		CTTblWidth width = table.getCTTbl().addNewTblPr().addNewTblW();
 		width.setType(STTblWidth.DXA);
-		width.setW(BigInteger.valueOf(9072));
-		// 设置上下左右四个方向的距离，可以将表格撑�		table.setCellMargins(20, 20, 20, 20);
+		width.setW(BigInteger.valueOf(3500));
+		// 设置上下左右四个方向的距离，可以将表格撑	table.setCellMargins(20, 20, 20, 20);
 		XWPFTableRow headRow = table.getRow(0);
 		List<XWPFTableCell> headerCells = headRow.getTableCells();
 		for (int i = 0; i < headers.size(); i++) {
@@ -748,6 +766,8 @@ public class ReportPOIWriter {
 		int splitnumber = 160/headerCells.size();
 		if(splitnumber>40)
 			splitnumber=40;
+		else if(splitnumber<20)
+			splitnumber=20;
         // set value to the table cells
         Set<String> imagePaths = new HashSet<String>();
         final String[] IMAGE_FIELDS = new String[] { "链接", "日期" };
@@ -756,6 +776,8 @@ public class ReportPOIWriter {
 		final int LINE_SIZE = lines.size();
 		int number_1=0;
 		int number_2=0;
+		int number_3=0;
+		int number_4=0;
 		for (int j = 0; j < LINE_SIZE; j++) {
 			ReportLine line = lines.get(j);
 			XWPFTableRow row = table.getRow(j+1);
@@ -783,7 +805,7 @@ public class ReportPOIWriter {
 					else{
 						row.getCell(i).setText(body);
 					}
-					
+//					row.getCell(i).setText(body);
 //					POIXMLDocumentPart cellPart = row.getCell(i).getPart();
 ////					POIXMLDocumentPart rel = cellPart.createRelationship(XWPFRelation.HYPERLINK, XWPFFactory.getInstance());
 ////					
@@ -804,7 +826,23 @@ public class ReportPOIWriter {
                     	}catch(Exception e){
                     		logger.error("parse number error "+body+e.getMessage());
                     	}
+                    }else if ("粉丝数".equalsIgnoreCase(headers.get(i))){
+                    	try{
+                    		int m = Integer.parseInt(body);
+                    		number_3+=m;
+                    	}catch(Exception e){
+                    		logger.error("parse number error "+body+e.getMessage());
+                    	}
+                    }else if ("回复数".equalsIgnoreCase(headers.get(i))){
+                    	try{
+                    		int m = Integer.parseInt(body);
+                    		number_4+=m;
+                    	}catch(Exception e){
+                    		logger.error("parse number error "+body+e.getMessage());
+                    	}
                     }
+                    
+                    
 				} else {
 					row.getCell(i).setText("");
 				}
@@ -828,6 +866,12 @@ public class ReportPOIWriter {
 		}
 		if(number_2>0){
 			msg+=";评论条数:"+number_2;
+		}
+		if(number_3>0){
+			msg+=";粉丝数:"+number_3;
+		}
+		if(number_4>0){
+			msg+=";回复数:"+number_4;
 		}
 		moduleNumber.setText(msg);
 		// picture
@@ -954,7 +998,11 @@ public class ReportPOIWriter {
     		reportTemplate.getColumnHeaders().add("标题");
     		reportTemplate.getColumnHeaders().add("推荐位置");
     		reportTemplate.getColumnHeaders().add("排名 ");
-
+    		reportTemplate.getColumnHeaders().add("转发数 ");
+    		reportTemplate.getColumnHeaders().add("粉丝数");
+    		reportTemplate.getColumnHeaders().add("评论数");
+    		reportTemplate.getColumnHeaders().add("热门微博排名");
+    		reportTemplate.getColumnHeaders().add("点赞数");
     		List<ReportLine> line1 = new ArrayList<ReportLine>();
         	for(int m=0;m<80;m++){
         		ReportLine line =  new ReportLine();
@@ -964,7 +1012,11 @@ public class ReportPOIWriter {
         		line.getColumns().put("日期", "2013-12-12");
         		line.getColumns().put("标题", "《汉字英雄》第二季苦情学霸张政竟敢讽刺马东？这是作死的节奏吗？");
         		line.getColumns().put("推荐位置", "首页");
-        	
+        		line.getColumns().put("转发数", "1234567");
+        		line.getColumns().put("粉丝数", "12323312");
+        		line.getColumns().put("热门微博排名", "首页");
+        		line.getColumns().put("点赞数", "2121");
+        		
         		line1.add(line);	
         	}
         	for(int m=0;m<60;m++){
