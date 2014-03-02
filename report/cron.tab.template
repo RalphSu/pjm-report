@@ -1,0 +1,1 @@
+* * * * * export PJM_HOME=/home/ralph/dev/pjm2; exec > ~/cron.log

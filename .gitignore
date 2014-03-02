@@ -5,3 +5,5 @@ report/.settings
 report/*.log
 *.orig
 *.docx
+*~
+cron.tab
