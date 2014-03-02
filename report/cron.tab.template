@@ -1,1 +1,1 @@
-* * * * * exec > ~/cron.log
+*/5 * * * * exec > ~/cron.log
