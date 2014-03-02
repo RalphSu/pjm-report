@@ -924,8 +924,10 @@ public class ReportPOIWriter {
 				logger.info(" full image file_path is " + path);
 				try {
 					fis = new FileInputStream(path);
-					doc.addPictureData(fis, fileType);
-					doc.createPicture(doc.getAllPictures().size() - 1,
+					String relationId=doc.addPictureData(fis, fileType);
+					int imageid = doc.getAllPictures().size()-1;
+					logger.info(" relationId is " + relationId+" imageId="+imageid);
+					doc.createPicture(imageid,
 							CHART_WIDTH, CHART_HEIGHT);
 					
 				} catch (Throwable t) {
@@ -982,125 +984,206 @@ public class ReportPOIWriter {
 	
 	
     public static void main(String[] args) {
-    	
-    	DaoImpl daotest = new DaoImpl();
-    	ReportTask task = new ReportTask();
-    	task.setReportStartTime(new Date());
-    	task.setProjectId(1l);
-    	task.setProjectName("null");
-    	task.setId(2l);
-    	ReportPOIWriter writer = new ReportPOIWriter(daotest, task);
-    	Set<ReportTemplate> templates = new HashSet<ReportTemplate>();
-    	templates.add(new ReportTemplate());
-    	templates.add(new ReportTemplate());
-    	Map<ReportTemplate, List<ReportLine>> reportData = new HashMap<ReportTemplate, List<ReportLine>>();
-    	{
-    		// news
-    		ReportTemplate reportTemplate = new ReportTemplate();
-    		reportTemplate.setClassified("新闻稿发布");
-    		reportTemplate.setTemplate_type(Dao.NEWS_TEMPLATE_TYPE);
-    		reportTemplate.setColumnHeaders(new ArrayList<String>());
-    		reportTemplate.getColumnHeaders().add("发布平台");
-    		reportTemplate.getColumnHeaders().add("链接");
-    		reportTemplate.getColumnHeaders().add("日期");
-    		reportTemplate.getColumnHeaders().add("标题");
-    		reportTemplate.getColumnHeaders().add("推荐位置");
-    		reportTemplate.getColumnHeaders().add("排名 ");
-    		reportTemplate.getColumnHeaders().add("转发数 ");
-    		reportTemplate.getColumnHeaders().add("粉丝数");
-    		reportTemplate.getColumnHeaders().add("评论数");
-    		reportTemplate.getColumnHeaders().add("热门微博排名");
-    		reportTemplate.getColumnHeaders().add("点赞数");
-    		List<ReportLine> line1 = new ArrayList<ReportLine>();
-        	for(int m=0;m<80;m++){
-        		ReportLine line =  new ReportLine();
-        		line.setColumns(new HashMap<String, Object>());
-        		line.getColumns().put("发布平台", "人民网");
-        		line.getColumns().put("链接", "http://www.dzwww.com/yule/yulezhuanti/mtcbg/201402/t20140211_9375824.htm");
-        		line.getColumns().put("日期", "2013-12-12");
-        		line.getColumns().put("标题", "《汉字英雄》第二季苦情学霸张政竟敢讽刺马东？这是作死的节奏吗？");
-        		line.getColumns().put("推荐位置", "首页");
-        		line.getColumns().put("转发数", "1234567");
-        		line.getColumns().put("粉丝数", "12323312");
-        		line.getColumns().put("热门微博排名", "首页");
-        		line.getColumns().put("点赞数", "2121");
-        		
-        		line1.add(line);	
-        	}
-        	for(int m=0;m<60;m++){
-        		ReportLine line =  new ReportLine();
-        		line.setColumns(new HashMap<String, Object>());
-        		line.getColumns().put("发布平台", "搜狐");
-        		line1.add(line);	
-        	}
-        	for(int m=0;m<40;m++){
-        		ReportLine line =  new ReportLine();
-        		line.setColumns(new HashMap<String, Object>());
-        		line.getColumns().put("发布平台", "网易");
-        		line1.add(line);	
-        	}
-        	for(int m=0;m<30;m++){
-        		ReportLine line =  new ReportLine();
-        		line.setColumns(new HashMap<String, Object>());
-        		line.getColumns().put("发布平台", "凤凰");
-        		line1.add(line);	
-        	}
-        	for(int m=0;m<10;m++){
-        		ReportLine line =  new ReportLine();
-        		line.setColumns(new HashMap<String, Object>());
-        		line.getColumns().put("发布平台", "新浪");
-        		line1.add(line);	
-        	}
-        	
-        	for(int m=0;m<10;m++){
-        		ReportLine line =  new ReportLine();
-        		line.setColumns(new HashMap<String, Object>());
-        		line.getColumns().put("发布平台", "吉祥");
-        		line1.add(line);	
-        	}
-        	reportData.put(reportTemplate, line1);
-        	
+//    	
+//    	DaoImpl daotest = new DaoImpl();
+//    	ReportTask task = new ReportTask();
+//    	task.setReportStartTime(new Date());
+//    	task.setProjectId(1l);
+//    	task.setProjectName("null");
+//    	task.setId(2l);
+//    	ReportPOIWriter writer = new ReportPOIWriter(daotest, task);
+//    	Set<ReportTemplate> templates = new HashSet<ReportTemplate>();
+//    	templates.add(new ReportTemplate());
+//    	templates.add(new ReportTemplate());
+//    	Map<ReportTemplate, List<ReportLine>> reportData = new HashMap<ReportTemplate, List<ReportLine>>();
+//    	{
+//    		// news
+//    		ReportTemplate reportTemplate = new ReportTemplate();
+//    		reportTemplate.setClassified("新闻稿发布");
+//    		reportTemplate.setTemplate_type(Dao.NEWS_TEMPLATE_TYPE);
+//    		reportTemplate.setColumnHeaders(new ArrayList<String>());
+//    		reportTemplate.getColumnHeaders().add("发布平台");
+//    		reportTemplate.getColumnHeaders().add("链接");
+//    		reportTemplate.getColumnHeaders().add("日期");
+//    		reportTemplate.getColumnHeaders().add("标题");
+//    		reportTemplate.getColumnHeaders().add("推荐位置");
+//    		reportTemplate.getColumnHeaders().add("排名 ");
+//    		reportTemplate.getColumnHeaders().add("转发数 ");
+//    		reportTemplate.getColumnHeaders().add("粉丝数");
+//    		reportTemplate.getColumnHeaders().add("评论数");
+//    		reportTemplate.getColumnHeaders().add("热门微博排名");
+//    		reportTemplate.getColumnHeaders().add("点赞数");
+//    		List<ReportLine> line1 = new ArrayList<ReportLine>();
+//        	for(int m=0;m<80;m++){
+//        		ReportLine line =  new ReportLine();
+//        		line.setColumns(new HashMap<String, Object>());
+//        		line.getColumns().put("发布平台", "人民网");
+//        		line.getColumns().put("链接", "http://www.dzwww.com/yule/yulezhuanti/mtcbg/201402/t20140211_9375824.htm");
+//        		line.getColumns().put("日期", "2013-12-12");
+//        		line.getColumns().put("标题", "《汉字英雄》第二季苦情学霸张政竟敢讽刺马东？这是作死的节奏吗？");
+//        		line.getColumns().put("推荐位置", "首页");
+//        		line.getColumns().put("转发数", "1234567");
+//        		line.getColumns().put("粉丝数", "12323312");
+//        		line.getColumns().put("热门微博排名", "首页");
+//        		line.getColumns().put("点赞数", "2121");
+//        		
+//        		line1.add(line);	
+//        	}
+//        	for(int m=0;m<60;m++){
+//        		ReportLine line =  new ReportLine();
+//        		line.setColumns(new HashMap<String, Object>());
+//        		line.getColumns().put("发布平台", "搜狐");
+//        		line1.add(line);	
+//        	}
+//        	for(int m=0;m<40;m++){
+//        		ReportLine line =  new ReportLine();
+//        		line.setColumns(new HashMap<String, Object>());
+//        		line.getColumns().put("发布平台", "网易");
+//        		line1.add(line);	
+//        	}
+//        	for(int m=0;m<30;m++){
+//        		ReportLine line =  new ReportLine();
+//        		line.setColumns(new HashMap<String, Object>());
+//        		line.getColumns().put("发布平台", "凤凰");
+//        		line1.add(line);	
+//        	}
+//        	for(int m=0;m<10;m++){
+//        		ReportLine line =  new ReportLine();
+//        		line.setColumns(new HashMap<String, Object>());
+//        		line.getColumns().put("发布平台", "新浪");
+//        		line1.add(line);	
+//        	}
+//        	
+//        	for(int m=0;m<10;m++){
+//        		ReportLine line =  new ReportLine();
+//        		line.setColumns(new HashMap<String, Object>());
+//        		line.getColumns().put("发布平台", "吉祥");
+//        		line1.add(line);	
+//        	}
+//        	reportData.put(reportTemplate, line1);
+//        	
+//    	}
+//    	
+//    	{
+//    		// blog
+//    		ReportTemplate reportTemplate = new ReportTemplate();
+//    		reportTemplate.setTemplate_type(Dao.BLOG_TEMPLATE_TYPE);
+//    		reportTemplate.setClassified("名人博客");
+//    		List<ReportLine> line1 = new ArrayList<ReportLine>();
+//        	for(int m=0;m<300;m++){
+//        		line1.add(new ReportLine());	
+//        	}
+//        	reportData.put(reportTemplate, line1);
+//        	
+//    	}
+//    	
+//    	{
+//    		// forum
+//    		ReportTemplate reportTemplate = new ReportTemplate();
+//    		reportTemplate.setTemplate_type(Dao.FORUM_TEMPLATE_TYPE);
+//    		reportTemplate.setClassified("论坛");
+//    		List<ReportLine> line1 = new ArrayList<ReportLine>();
+//        	for(int m=0;m<200;m++){
+//        		line1.add(new ReportLine());	
+//        	}
+//        	reportData.put(reportTemplate, line1);
+//        	
+//    	}
+//    	{
+//    		// twitter
+//    		ReportTemplate reportTemplate = new ReportTemplate();
+//    		reportTemplate.setTemplate_type(Dao.WEIBO_TEMPLATE_TYPE);
+//    		reportTemplate.setClassified("微博直发");
+//    		List<ReportLine> line1 = new ArrayList<ReportLine>();
+//        	for(int m=0;m<2500;m++){
+//        		line1.add(new ReportLine());	
+//        	}
+//        	reportData.put(reportTemplate, line1);
+//        	
+//    	}
+//    	
+//    	writer.write(reportData);
+    	try{
+    		CustomXWPFDocument doc = new CustomXWPFDocument(ReportPOIWriter.class.getResourceAsStream("/Template.docx"));
+    		FileInputStream fis=null;
+    		try {
+    			String path="c:\\number_4.png";
+    			fis = new FileInputStream(path);
+				doc.addPictureData(fis, XWPFDocument.PICTURE_TYPE_PNG);
+				doc.createPicture(doc.getAllPictures().size() - 1,
+						CHART_WIDTH, CHART_HEIGHT);
+				
+			} catch (Throwable t) {
+				logger.error("write module image failed. Path is " ,
+						t);
+			} finally {
+				if (fis != null) {
+					try {
+						fis.close();
+					} catch (Exception e) {
+						// ignore
+						logger.warn("close failure", e);
+					}
+				}
+			}
+			
+			try {
+    			String path="c:\\number_4.png";
+    			fis = new FileInputStream(path);
+				doc.addPictureData(fis, XWPFDocument.PICTURE_TYPE_PNG);
+				doc.createPicture(doc.getAllPictures().size() - 1,
+						CHART_WIDTH, CHART_HEIGHT);
+				
+			} catch (Throwable t) {
+				logger.error("write module image failed. Path is " ,
+						t);
+			} finally {
+				if (fis != null) {
+					try {
+						fis.close();
+					} catch (Exception e) {
+						// ignore
+						logger.warn("close failure", e);
+					}
+				}
+			}
+			
+			try {
+    			String path="c:\\number_3.png";
+    			fis = new FileInputStream(path);
+				doc.addPictureData(fis, XWPFDocument.PICTURE_TYPE_PNG);
+				doc.createPicture(doc.getAllPictures().size() - 1,
+						CHART_WIDTH, CHART_HEIGHT);
+				
+			} catch (Throwable t) {
+				logger.error("write module image failed. Path is " ,
+						t);
+			} finally {
+				if (fis != null) {
+					try {
+						fis.close();
+					} catch (Exception e) {
+						// ignore
+						logger.warn("close failure", e);
+					}
+				}
+			}
+			
+			FileOutputStream out = null;
+			try {
+				
+	            out = new FileOutputStream("c:\\11.docx");
+				doc.write(out);
+				out.flush();
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+    	}catch(Exception e){
+    		e.printStackTrace();
     	}
     	
-    	{
-    		// blog
-    		ReportTemplate reportTemplate = new ReportTemplate();
-    		reportTemplate.setTemplate_type(Dao.BLOG_TEMPLATE_TYPE);
-    		reportTemplate.setClassified("名人博客");
-    		List<ReportLine> line1 = new ArrayList<ReportLine>();
-        	for(int m=0;m<300;m++){
-        		line1.add(new ReportLine());	
-        	}
-        	reportData.put(reportTemplate, line1);
-        	
-    	}
     	
-    	{
-    		// forum
-    		ReportTemplate reportTemplate = new ReportTemplate();
-    		reportTemplate.setTemplate_type(Dao.FORUM_TEMPLATE_TYPE);
-    		reportTemplate.setClassified("论坛");
-    		List<ReportLine> line1 = new ArrayList<ReportLine>();
-        	for(int m=0;m<200;m++){
-        		line1.add(new ReportLine());	
-        	}
-        	reportData.put(reportTemplate, line1);
-        	
-    	}
-    	{
-    		// twitter
-    		ReportTemplate reportTemplate = new ReportTemplate();
-    		reportTemplate.setTemplate_type(Dao.WEIBO_TEMPLATE_TYPE);
-    		reportTemplate.setClassified("微博直发");
-    		List<ReportLine> line1 = new ArrayList<ReportLine>();
-        	for(int m=0;m<2500;m++){
-        		line1.add(new ReportLine());	
-        	}
-        	reportData.put(reportTemplate, line1);
-        	
-    	}
-    	
-    	writer.write(reportData);
     	
 	}
     
