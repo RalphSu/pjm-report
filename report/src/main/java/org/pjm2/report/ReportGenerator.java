@@ -4,18 +4,12 @@
 package org.pjm2.report;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.pjm2.report.db.model.ReportTask;
 import org.pjm2.report.db.model.ReportTask.Status;
@@ -31,26 +25,26 @@ import org.slf4j.LoggerFactory;
 public class ReportGenerator {
 
 	private static final Logger logger = LoggerFactory.getLogger(ReportGenerator.class);
-	private volatile boolean stop = false;
+//	private volatile boolean stop = false;
 	private final Dao dao;
 
-	// daemon thread factory
-	private static class DaemonThreadFactory implements ThreadFactory {
-		final AtomicInteger threadNumber = new AtomicInteger(1);
-		final String namePrefix = "Report genearte [Thread-";
-		final String nameSuffix = "]";
+//	// daemon thread factory
+//	private static class DaemonThreadFactory implements ThreadFactory {
+//		final AtomicInteger threadNumber = new AtomicInteger(1);
+//		final String namePrefix = "Report genearte [Thread-";
+//		final String nameSuffix = "]";
+//
+//		public Thread newThread(Runnable r) {
+//			Thread t = new Thread(Thread.currentThread().getThreadGroup(), r, namePrefix
+//					+ threadNumber.getAndIncrement() + nameSuffix, 0);
+//			t.setDaemon(true);
+//			if (t.getPriority() != Thread.NORM_PRIORITY)
+//				t.setPriority(Thread.NORM_PRIORITY);
+//			return t;
+//		}
+//	}
 
-		public Thread newThread(Runnable r) {
-			Thread t = new Thread(Thread.currentThread().getThreadGroup(), r, namePrefix
-					+ threadNumber.getAndIncrement() + nameSuffix, 0);
-			t.setDaemon(true);
-			if (t.getPriority() != Thread.NORM_PRIORITY)
-				t.setPriority(Thread.NORM_PRIORITY);
-			return t;
-		}
-	}
-
-	private ExecutorService executors = Executors.newFixedThreadPool(10, new DaemonThreadFactory());
+//	private ExecutorService executors = Executors.newFixedThreadPool(10, new DaemonThreadFactory());
 	private ConcurrentHashMap<Long, Job> runningTaskId = new ConcurrentHashMap<Long, Job>();
 
     public ReportGenerator() {
@@ -59,37 +53,46 @@ public class ReportGenerator {
     }
 
 	public void startLoop() {
-		stop = false;
-
-		while (!stop) {
+//		stop = false;
+//		while (!stop) {
 			try {
 				List<Job> jobs = getJobs();
-				logger.info("get jobs @ " + new Date() + " with job size " + jobs.size());
+				logger.info("get jobs @ " + new Date() + " with job number " + jobs.size());
 				// submit jobs
 				for (Job job : jobs) {
 					try {
-						runningTaskId.put(job.task.getId(), job);
-//						job.run();
-						executors.submit(job);
+//						runningTaskId.put(job.task.getId(), job);
+//						executors.submit(job);
+						job.run();
 					} catch (Throwable t) {
 						logger.error("report genration encounter an error! catch and log this, then continue running!");
 					}
 				}
-				slientWait();
+//				waitExecution();
+//				slientWait();
 			} catch (Throwable t) {
 				logger.error("report genration encounter an error! catch and log this, then continue running!");
 			}
-		}
+//		}
 	}
 
-	private void slientWait() {
-		try {
-			// current no job, sleep wait
-			Thread.sleep(1000 * 60);
-		} catch (InterruptedException e) {
-			logger.info("Generate wait!", e);
-		}
-	}
+//	private void waitExecution() {
+//		try {
+//			executors.shutdown();
+//			executors.awaitTermination(30, TimeUnit.MINUTES);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
+//	}
+//
+//	private void slientWait() {
+//		try {
+//			// current no job, sleep wait
+//			Thread.sleep(1000 * 60);
+//		} catch (InterruptedException e) {
+//			logger.info("Generate wait!", e);
+//		}
+//	}
 
 	private List<Job> getJobs() {
         try {
@@ -105,16 +108,16 @@ public class ReportGenerator {
 		}
 	}
 
-	public void stopLoop() {
-//		stop = true;
-		try {
-			executors.shutdown();
-			executors.awaitTermination(3, TimeUnit.MINUTES);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			executors.shutdownNow();
-		}
-	}
+//	public void stopLoop() {
+////		stop = true;
+//		try {
+//			executors.shutdown();
+//			executors.awaitTermination(3, TimeUnit.MINUTES);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//			executors.shutdownNow();
+//		}
+//	}
 
 	private class Job implements Runnable {
 		private final ReportTask task;

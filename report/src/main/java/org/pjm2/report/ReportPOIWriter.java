@@ -30,20 +30,15 @@ import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.POIXMLDocumentPart;
 import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.TextAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFFactory;
-import org.apache.poi.xwpf.usermodel.XWPFHyperlink;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRelation;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
-import org.apache.xmlbeans.SchemaType;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -223,8 +218,9 @@ public class ReportPOIWriter {
 		String prefix = System.getenv("PJM_HOME");
 		if(prefix==null)
 			prefix = System.getProperty("PJM_HOME");
-		if(prefix==null)
-		    prefix = " ../../pjm2/";
+		if(prefix==null) {
+		    throw new RuntimeException("can not find PJM_HOME system property! please set correctly.");
+		}
 		String path = prefix + "/reports/" + this.task.getProjectName() + "/";
 		// check parent directory
 //		path = "/home/likewise-open/CORP/liasu/2.docx";
