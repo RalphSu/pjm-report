@@ -83,7 +83,7 @@ public class ReportPOIWriter {
 	private ReportTask task;
 	private static final int CHART_WIDTH=400;
 	private static final int CHART_HEIGHT=280;
-
+	private Map<String, Integer> picturesMap = new HashMap<String, Integer>();
 
 
 	public ReportPOIWriter(Dao dao, ReportTask task) {
@@ -922,9 +922,15 @@ public class ReportPOIWriter {
 					fis = new FileInputStream(path);
 					String relationId=doc.addPictureData(fis, fileType);
 					int imageid = doc.getAllPictures().size()-1;
+					if(picturesMap.get(relationId)==null){
+						picturesMap.put(relationId, imageid);
+					}else{
+						imageid = picturesMap.get(relationId);
+					}
+					
 					logger.info(" relationId is " + relationId+" imageId="+imageid);
-//					doc.createPicture(imageid,
-//							CHART_WIDTH, CHART_HEIGHT);
+					doc.createPicture(imageid,
+							CHART_WIDTH, CHART_HEIGHT);
 					
 				} catch (Throwable t) {
 					logger.error("write module image failed. Path is " + path,
