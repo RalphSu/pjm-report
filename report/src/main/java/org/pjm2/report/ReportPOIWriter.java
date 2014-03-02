@@ -923,8 +923,8 @@ public class ReportPOIWriter {
 					String relationId=doc.addPictureData(fis, fileType);
 					int imageid = doc.getAllPictures().size()-1;
 					logger.info(" relationId is " + relationId+" imageId="+imageid);
-					doc.createPicture(imageid,
-							CHART_WIDTH, CHART_HEIGHT);
+//					doc.createPicture(imageid,
+//							CHART_WIDTH, CHART_HEIGHT);
 					
 				} catch (Throwable t) {
 					logger.error("write module image failed. Path is " + path,
