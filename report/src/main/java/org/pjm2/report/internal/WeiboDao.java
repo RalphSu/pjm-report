@@ -10,7 +10,7 @@ public class WeiboDao extends AbstractDAO {
 	
 	protected String getFiledsSql() {
 		return "select n.id, n.classified, t.column_name, f.body from weibos as n, weibo_fields as f, weibo_classifieds as c, templates as t where " +
-				" n.id in (%s) and n.id = f.weibos_id and f.weibo_classifieds_id = c.id and c.template_id = t.id order by n.image_date ";
+				" n.id in (%s) and n.id = f.weibos_id and f.weibo_classifieds_id = c.id and c.template_id = t.id order by n.image_date  ASC";
 	}
 
 	protected String getItemByClassifieldSql() {
