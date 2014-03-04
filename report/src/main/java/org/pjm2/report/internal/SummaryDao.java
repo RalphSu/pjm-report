@@ -10,7 +10,7 @@ public class SummaryDao extends AbstractDAO {
 	
 	protected String getFiledsSql() {
 		return "select n.id, n.classified, t.column_name, f.body from summaries as n, summary_fields as f, summary_classifieds as c, templates as t where " +
-				" n.id in (%s) and n.id = f.summaries_id and f.summary_classifieds_id = c.id and c.template_id = t.id order by n.id ";
+				" n.id in (%s) and n.id = f.summaries_id and f.summary_classifieds_id = c.id and c.template_id = t.id order by n.image_date ";
 	}
 
 	protected String getItemByClassifieldSql() {

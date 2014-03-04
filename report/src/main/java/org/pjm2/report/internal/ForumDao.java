@@ -12,7 +12,7 @@ public class ForumDao extends AbstractDAO {
 	protected String getFiledsSql() {
 		return 
 		"select n.id, n.classified, t.column_name, f.body from forums as n, forum_fields as f, forum_classifieds as c, templates as t where "
-		+ " n.id in (%s) and n.id = f.forums_id and f.forum_classifieds_id = c.id and c.template_id = t.id order by n.id ";
+		+ " n.id in (%s) and n.id = f.forums_id and f.forum_classifieds_id = c.id and c.template_id = t.id order by n.image_date ";
 	}
 
 

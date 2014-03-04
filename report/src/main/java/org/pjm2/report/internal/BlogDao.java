@@ -11,7 +11,7 @@ public class BlogDao extends AbstractDAO {
 	@Override
 	protected String getFiledsSql() {
 		return "select n.id, n.classified, t.column_name, f.body from blogs as n, blog_fields as f, blog_classifieds as c, templates as t where " +
-		" n.id in (%s) and n.id = f.blogs_id and f.blog_classifieds_id = c.id and c.template_id = t.id order by n.id ";
+		" n.id in (%s) and n.id = f.blogs_id and f.blog_classifieds_id = c.id and c.template_id = t.id order by n.image_date ";
 	}
 
 	@Override

@@ -38,7 +38,8 @@ public class ReportTask {
     @Column
     private String  status;
 
-    @Column
+    @SuppressWarnings({ "unused"})
+	@Column
     private String  type;
     
     @Column(name="task_type")
