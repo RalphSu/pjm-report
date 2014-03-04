@@ -132,16 +132,14 @@ public class ReportPOIWriter {
 //					title1.setFontFamily("微软雅黑");
 					SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日");
 					String startDate = format.format(task.getReportStartTime());
-					if(type=="周报"){
+					if(type=="周报" || type == "结案报告"){
 						if(task.getReportEndTime()!=null){
 							String endDate = format.format(task.getReportEndTime());
-							
 							title2.setText(String.format("（%s - %s）", startDate, endDate));
 						}else{
 							title2.setText(String.format("(%s) ", startDate));
 						}
-						
-					}else{
+					} else {
 						title2.setText(String.format("(%s) ", startDate));
 					}
 					
