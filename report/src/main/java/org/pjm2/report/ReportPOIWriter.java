@@ -258,24 +258,24 @@ public class ReportPOIWriter {
 		}
 	}
 
-	private void writeTemplateType(CustomXWPFDocument doc, Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e) {
-		XWPFParagraph templateParagraph = doc.createParagraph();
-//		templateParagraph.setAlignment(ParagraphAlignment.LEFT);
-//		templateParagraph.setVerticalAlignment(TextAlignment.CENTER);
-		templateParagraph.setStyle("Heading1");
-		XWPFRun templateRun = templateParagraph.createRun();
-		templateRun.setFontSize(20);
-		templateRun.setText(e.getKey().substring(0, e.getKey().length() - 2)); // assume last two word is "模板"
-//		templateRun.setBold(true);
-
-		int i = 0;
-		for (Entry<ReportTemplate, List<ReportLine>> module : e.getValue()) {
-			i++;
-			writeModule(doc, i, module.getKey(), module.getValue());
-		}
-
-		
-	}
+//	private void writeTemplateType(CustomXWPFDocument doc, Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e) {
+//		XWPFParagraph templateParagraph = doc.createParagraph();
+////		templateParagraph.setAlignment(ParagraphAlignment.LEFT);
+////		templateParagraph.setVerticalAlignment(TextAlignment.CENTER);
+//		templateParagraph.setStyle("Heading1");
+//		XWPFRun templateRun = templateParagraph.createRun();
+//		templateRun.setFontSize(20);
+//		templateRun.setText(e.getKey().substring(0, e.getKey().length() - 2)); // assume last two word is "模板"
+////		templateRun.setBold(true);
+//
+//		int i = 0;
+//		for (Entry<ReportTemplate, List<ReportLine>> module : e.getValue()) {
+//			i++;
+//			writeModule(doc, i, module.getKey(), module.getValue());
+//		}
+//
+//		
+//	}
 	
 	private void writeTemplateType(CustomXWPFDocument doc, String key,List<Entry<ReportTemplate, List<ReportLine>>> data) {
 		XWPFParagraph templateParagraph = doc.createParagraph();
@@ -779,6 +779,7 @@ public class ReportPOIWriter {
 		int number_2=0;
 		int number_3=0;
 		int number_4=0;
+		int number_5 = 0; // click number
 		for (int j = 0; j < LINE_SIZE; j++) {
 			ReportLine line = lines.get(j);
 			XWPFTableRow row = table.getRow(j+1);
@@ -841,6 +842,13 @@ public class ReportPOIWriter {
                     	}catch(Exception e){
                     		logger.error("parse number error "+body+e.getMessage());
                     	}
+                    } else if ("点击数".equalsIgnoreCase(headers.get(i))) {
+                    	try {
+                    		int m = Integer.parseInt(body);
+                    		number_5 +=m;
+                    	} catch (Exception e) {
+							logger.error("parse number error " + body, e);
+						}
                     }
                     
                     
@@ -850,23 +858,15 @@ public class ReportPOIWriter {
 				row.getCell(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
 			}
 
+			addImagePaths(imagePaths, template, IMAGE_FIELDS, link_index, date_index, line);
 			
-            // find matched image for each line if any by matching the url and the date
-            if (link_index >= 0 && date_index >= 0) {
-                Object link_obj = line.getColumns().get(IMAGE_FIELDS[0]);
-                Object date_obj = line.getColumns().get(IMAGE_FIELDS[1]);
-                if (link_obj != null && date_obj != null) {
-                    List<String> path = dao.findImagePathByUrl(link_obj.toString(), date_obj.toString());
-                    imagePaths.addAll(path);
-                }
-            }
 		}
-		String msg = "共计"+lines.size()+"条";
+		String msg = "共计"+lines.size()+"条记录";
 		if(number_1>0){
-			msg+=";转发条数:"+number_1;
+			msg+=";转发数:"+number_1;
 		}
 		if(number_2>0){
-			msg+=";评论条数:"+number_2;
+			msg+=";评论数:"+number_2;
 		}
 		if(number_3>0){
 			msg+=";粉丝数:"+number_3;
@@ -874,11 +874,42 @@ public class ReportPOIWriter {
 		if(number_4>0){
 			msg+=";回复数:"+number_4;
 		}
+		if (number_5>0) {
+			msg+=";点击数:"+number_5;
+		}
 		moduleNumber.setText(msg);
 		// picture
 		logger.info(String.format(" for report tempalte %s, classified %s,  report image paths are %s", template.getTemplate_type(),
 				template.getClassified(), StringUtils.join(imagePaths, "\n")));
 		writeModuleImage(doc, imagePaths);
+	}
+
+	/*
+	 * Add the images paths to the images paths set.
+	 */
+	private void addImagePaths(Set<String> imagePaths,
+			ReportTemplate template, final String[] IMAGE_FIELDS, int link_index, int date_index,
+			ReportLine line) {
+		if (Dao.SUMMARY_TEMPLATE_TYPE.equals(template.getTemplate_type())) {
+			final String IMAGE_FIELD_NAME = "截图";
+			// summary doesn't have link, but the line has an screenshot field. Use this field value for the file path
+			Object path = line.getColumns().get(IMAGE_FIELD_NAME);
+			if ( path != null && !path.toString().isEmpty()) {
+				imagePaths.add(path.toString());
+			}
+		} else {
+			// find matched image for each line if any by matching the url and
+			// the date
+			if (link_index >= 0 && date_index >= 0) {
+				Object link_obj = line.getColumns().get(IMAGE_FIELDS[0]);
+				Object date_obj = line.getColumns().get(IMAGE_FIELDS[1]);
+				if (link_obj != null && date_obj != null) {
+					List<String> path = dao.findImagePathByUrl(
+							link_obj.toString(), date_obj.toString());
+					imagePaths.addAll(path);
+				}
+			}
+		}
 	}
 
 	private void writeModuleImage(CustomXWPFDocument doc, Set<String> imagePaths) {

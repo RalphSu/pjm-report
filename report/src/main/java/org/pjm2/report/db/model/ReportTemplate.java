@@ -13,7 +13,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity
-@Table(name = "report_tasks")
+@Table(name = "report_templates")
 public class ReportTemplate {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
