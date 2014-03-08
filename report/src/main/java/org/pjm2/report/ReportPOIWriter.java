@@ -66,6 +66,7 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblWidth;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
+import org.pjm2.report.ReportGenerator.TempalteSorter;
 import org.pjm2.report.db.model.ReportTask;
 import org.pjm2.report.db.model.ReportTemplate;
 import org.pjm2.report.model.ReportLine;
@@ -79,16 +80,17 @@ import org.slf4j.LoggerFactory;
  */
 public class ReportPOIWriter {
 	private static final Logger logger = LoggerFactory.getLogger(ReportPOIWriter.class);
-	private Dao dao;
-	private ReportTask task;
+	private final Dao dao;
+	private final ReportTask task;
 	private static final int CHART_WIDTH=400;
 	private static final int CHART_HEIGHT=280;
-	private Map<String, Integer> picturesMap = new HashMap<String, Integer>();
+	private final Map<String, Integer> picturesMap = new HashMap<String, Integer>();
+	private final TempalteSorter sorter;
 
-
-	public ReportPOIWriter(Dao dao, ReportTask task) {
+	public ReportPOIWriter(Dao dao, ReportTask task, TempalteSorter sorter) {
 		this.dao = dao;
 		this.task = task;
+		this.sorter = sorter;
 	}
 
 	public boolean write( Map<ReportTemplate, List<ReportLine>> reportData) {
@@ -980,7 +982,8 @@ public class ReportPOIWriter {
 
     private Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> shuffle(Map<ReportTemplate, List<ReportLine>> reportData) {
 		// {template_type => [ report_template => List<ReportLine> ] }
-		Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = new TreeMap<String, List<Entry<ReportTemplate, List<ReportLine>>>>();
+    	
+		Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = new TreeMap<String, List<Entry<ReportTemplate, List<ReportLine>>>>(sorter);
 		
 		for (Entry<ReportTemplate, List<ReportLine>> e :reportData.entrySet()) {
 			List<Entry<ReportTemplate, List<ReportLine>>> entries = sortedData.get(e.getKey().getTemplate_type());

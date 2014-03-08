@@ -49,5 +49,10 @@ public class TestEntityLoad extends TestCase {
 	    }
 	    System.out.println("-------------end find taks:: ");
 	}
+	
+	public void testSortTemplates() {
+	    List<String> tasks = dao.sortedTempalteTypes(23l);
+	    System.out.println(tasks);
+	}
 
 }

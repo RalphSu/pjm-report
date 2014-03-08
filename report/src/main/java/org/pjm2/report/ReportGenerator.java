@@ -5,12 +5,14 @@ package org.pjm2.report;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.pjm2.report.db.model.ReportTask;
 import org.pjm2.report.db.model.ReportTask.Status;
 import org.pjm2.report.db.model.ReportTemplate;
@@ -180,10 +182,31 @@ public class ReportGenerator {
 		}
 
 		private boolean writeToFile(Map<ReportTemplate, List<ReportLine>> reportData) {
-			ReportPOIWriter writer = new ReportPOIWriter(dao,task);
+			List<String> sortedTemplates = dao.sortedTempalteTypes(task.getProjectId());
+			TempalteSorter sorter = new TempalteSorter(sortedTemplates);
+			ReportPOIWriter writer = new ReportPOIWriter(dao, task, sorter);
 			return writer.write(reportData);
 		}
 
 	}
+	
+	
+	public static class TempalteSorter implements Comparator<String>{
+		final Map<String, Integer> definedOrders = new HashMap<String, Integer>();
+		public TempalteSorter(List<String> sortedTemplates) {
+			for (int i = 0; i < sortedTemplates.size(); i++) {
+				this.definedOrders.put(sortedTemplates.get(i), i);
+			}
+		}
+		
+		@Override
+		public int compare(String o1, String o2) {
+			Integer index1 = definedOrders.get(o1);
+			Integer index2 = definedOrders.get(o2);
+			return ObjectUtils.compare(index1, index2);
+		}
+
+	}
+
 
 }

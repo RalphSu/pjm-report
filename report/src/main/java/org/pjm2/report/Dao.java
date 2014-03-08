@@ -127,11 +127,31 @@ public class Dao {
 
 	@SuppressWarnings("unchecked")
 	public List<ReportTemplate> findReportTemplates(Long project_id) {
-		String sql = "select * from report_templates where project_id = " + project_id;
+		String sql = "select * from report_templates where project_id = " + project_id + " order by position ASC ";
 		Query query = manager.createNativeQuery(sql, ReportTemplate.class);
 		query.setHint(QueryHints.HINT_CACHE_MODE, CacheMode.IGNORE);
 		List<?> result = query.getResultList();
 		return (List<ReportTemplate>) result;
+	}
+	
+	public List<String> sortedTempalteTypes(Long project_id) {
+		String sql = "select template_type from report_templates where project_id = " + project_id + " group by template_type order by position ASC ";
+		Query query = manager.createNativeQuery(sql);
+		query.setHint(QueryHints.HINT_CACHE_MODE, CacheMode.IGNORE);
+		List<?> queryResults = query.getResultList();
+		List<String> results = new ArrayList<String>();
+		for (Object o : queryResults) {
+			if (o instanceof String) {
+				results.add(o.toString());
+			} else if (o instanceof Object[]) {
+				for (Object so : (Object[]) o) {
+					if (so instanceof String) {
+						results.add(so.toString());
+					}
+				}
+			}
+		}
+		return results;
 	}
 
 	public List<ReportLine> findReportLine(ReportTemplate template, long pid, Date starTime, Date endTime) {
