@@ -10,7 +10,7 @@ public class NewsDao extends AbstractDAO {
 
 	@Override
 	protected String getFiledsSql() {
-		return "select n.id, n.classified, t.column_name, f.body from news_releases as n, news_release_fields as f, news_classifieds as c, templates as t where " +
+		return "select n.id, n.image_date, t.column_name, f.body from news_releases as n, news_release_fields as f, news_classifieds as c, templates as t where " +
 		" n.id in (%s) and n.id = f.news_releases_id and f.news_classifieds_id = c.id and c.template_id = t.id order by n.image_date ASC";
 	}
 

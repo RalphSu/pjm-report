@@ -3,6 +3,7 @@ package org.pjm2.report.internal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.CacheMode;
 import org.hibernate.jpa.QueryHints;
@@ -130,13 +132,25 @@ public abstract class AbstractDAO  implements IEntityDao {
 				reportLine = lines.get(id);
 			} else {
 				// add one line
+				String date = "";
+				if (line[1] != null) {
+					date = line[1].toString();
+				}
 				reportLine = new ReportLine();
 				reportLine.setItemId(id);
-//				reportLine.setTemplate_type((String) line[1]);
+				reportLine.setDate(date);
 				lines.put(id, reportLine);
 			}
 			reportLine.getColumns().put((String) line[2], line[3]);
 		}
-		return new ArrayList<ReportLine>(lines.values());
+		
+		List<ReportLine> result = new ArrayList<ReportLine>(lines.values());
+		Collections.sort(result, new Comparator<ReportLine>() {
+			@Override
+			public int compare(ReportLine o1, ReportLine o2) {
+				return ObjectUtils.compare(o1.getDate(), o2.getDate());
+			}
+		});
+		return result;
 	}
 }

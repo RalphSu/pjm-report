@@ -9,7 +9,7 @@ public class WeixinDao extends AbstractDAO {
 	}
 	
 	protected String getFiledsSql() {
-		return "select n.id, n.classified, t.column_name, f.body from weixins as n, weixin_fields as f, weixin_classifieds as c, templates as t where " +
+		return "select n.id, n.image_date, t.column_name, f.body from weixins as n, weixin_fields as f, weixin_classifieds as c, templates as t where " +
 				" n.id in (%s) and n.id = f.weixins_id and f.weixin_classifieds_id = c.id and c.template_id = t.id order by n.image_date  ASC";
 	}
 

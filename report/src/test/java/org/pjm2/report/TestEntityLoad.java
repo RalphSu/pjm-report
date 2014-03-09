@@ -10,6 +10,7 @@ import javax.persistence.Persistence;
 import junit.framework.TestCase;
 
 import org.pjm2.report.db.model.ReportTask;
+import org.pjm2.report.db.model.ReportTemplate;
 
 public class TestEntityLoad extends TestCase {
 
@@ -53,6 +54,13 @@ public class TestEntityLoad extends TestCase {
 	public void testSortTemplates() {
 	    List<String> tasks = dao.sortedTempalteTypes(23l);
 	    System.out.println(tasks);
+	}
+
+	public void testReportLine() {
+		List<ReportTemplate> templates = dao.findReportTemplates(23l);
+		for (ReportTemplate template : templates) {
+			dao.findReportLine(template, 23, null, null);
+		}
 	}
 
 }

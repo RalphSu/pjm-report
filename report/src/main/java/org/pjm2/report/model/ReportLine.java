@@ -6,6 +6,7 @@ import java.util.Map;
 public class ReportLine {
 	private Long itemId;
 //	private String template_type;
+	private String date;
 	private Map<String, Object> columns = new HashMap<String, Object>();
 
 	public Long getItemId() {
@@ -14,6 +15,14 @@ public class ReportLine {
 
 	public void setItemId(Long itemId) {
 		this.itemId = itemId;
+	}
+
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
 	}
 
 	public Map<String, Object> getColumns() {
