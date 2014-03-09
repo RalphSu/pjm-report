@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
@@ -1004,7 +1005,7 @@ public class ReportPOIWriter {
 	
 	private static class ReportComparator implements Comparator<Entry<ReportTemplate, List<ReportLine>>> {
 		public int compare(Entry<ReportTemplate, List<ReportLine>> object1, Entry<ReportTemplate, List<ReportLine>> object2) {
-			return object1.getKey().getClassified().compareTo(object2.getKey().getClassified());
+			return ObjectUtils.compare(object1.getKey().getPosition(), object2.getKey().getPosition());
 		}
 	}
 
