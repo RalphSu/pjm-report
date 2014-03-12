@@ -600,9 +600,13 @@ public class ReportPOIWriter {
 		//default get previous 2 weeks data 
 		 TimeSeriesCollection timeSeriesCollection = new TimeSeriesCollection();
         TimeSeries timeseries = new TimeSeries("ffffff", org.jfree.data.time.Day.class);
+        Date reportbase= this.task.getReportEndTime();
+        if(reportbase==null)
+        	reportbase=this.task.getReportStartTime();
+        
 		for(int m=15;m>0;m--){
 			Calendar cal = Calendar.getInstance();
-			cal.setTime(this.task.getReportStartTime());
+			cal.setTime(reportbase);
 			cal.add(Calendar.DAY_OF_MONTH, (0-m));
 			Date calStartDate = cal.getTime();
 			cal.add(Calendar.DAY_OF_MONTH, 1);
