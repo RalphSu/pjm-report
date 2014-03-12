@@ -112,7 +112,7 @@ public class ReportPOIWriter {
 				String type = "日报";
 				if (ReportTask.TASKTYPE.weekly.name().equalsIgnoreCase(
 						task.getTaskType())) {
-					type = "周报 ";
+					type = "周报";
 				} else if (ReportTask.TASKTYPE.summary.name().equalsIgnoreCase(
 						task.getTaskType())) {
 					type = "结案报告";
