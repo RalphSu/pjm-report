@@ -795,6 +795,7 @@ public class ReportPOIWriter {
 				Object obj = line.getColumns().get(headers.get(i));
 				if (obj != null) {
 					String body = obj.toString();
+					logger.debug("header column name: " + headers.get(i) + " , value is: " + body);
 					if("链接".equalsIgnoreCase(headers.get(i))){
 						if(body.length()>splitnumber){
 						  String part1=body.substring(0,splitnumber);
