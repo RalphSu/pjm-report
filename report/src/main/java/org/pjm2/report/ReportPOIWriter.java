@@ -809,7 +809,8 @@ public class ReportPOIWriter {
 						  }else{
 							  row.getCell(i).setText(part1+part2);  
 						  }
-						  
+						} else {
+						    row.getCell(i).setText(body);
 						}
 					}
 					else{
