@@ -35,7 +35,10 @@ import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.TextAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFHyperlink;
+import org.apache.poi.xwpf.usermodel.XWPFHyperlinkRun;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRelation;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
@@ -65,6 +68,7 @@ import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHyperlink;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblWidth;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
 import org.pjm2.report.ReportGenerator.TempalteSorter;
@@ -797,6 +801,7 @@ public class ReportPOIWriter {
 					String body = obj.toString();
 					logger.debug("header column name: " + headers.get(i) + " , value is: " + body);
 					if("链接".equalsIgnoreCase(headers.get(i))){
+						String displayText = body;
 						if(body.length()>splitnumber){
 						  String part1=body.substring(0,splitnumber);
 						  part1+="\r\n";
@@ -805,24 +810,40 @@ public class ReportPOIWriter {
 							  String part2_1=part2.substring(0,splitnumber);
 							  part2_1+="\r\n";
 							  String part2_2 = part2.substring(splitnumber);
-							  row.getCell(i).setText(part1+part2_1+part2_2);
+							  displayText = part1+part2_1+part2_2;
 						  }else{
-							  row.getCell(i).setText(part1+part2);  
+							  displayText = part1 + part2;
 						  }
 						} else {
-						    row.getCell(i).setText(body);
+							displayText = body;
+						}
+						// set displayText
+//						row.getCell(i).setText(body);
+						// blocks to add hyper link
+						{
+							// 1. add a XWPFHyperlink to the doc. This code from @seeAlso XWPFDocument.initHyperlinks()
+							String hypwLinkId = doc.getPackagePart().addExternalRelationship(body, XWPFRelation.HYPERLINK.getRelation()).getId();
+							
+							XWPFHyperlink link = new XWPFHyperlink(hypwLinkId, body);
+							doc.addHyperLink(link);
+
+							// 2. add a hyper link run at the right place.
+							// XWPFParagraph paragraph = row.getCell(i).getParagraphArray(0);
+							XWPFParagraph graph = row.getCell(i).addParagraph();
+							graph.setStyle("HyperLink");
+							CTHyperlink ctLink = graph.getCTP().addNewHyperlink();
+							XWPFHyperlinkRun linkRun = new XWPFHyperlinkRun(ctLink, graph.getCTP().addNewR(), graph);
+							linkRun.setHyperlinkId(link.getId());
+							linkRun.setText(displayText);
+							linkRun.setItalic(true);
+							graph.addRun(linkRun);
 						}
 					}
 					else{
 						row.getCell(i).setText(body);
 					}
-//					row.getCell(i).setText(body);
-//					POIXMLDocumentPart cellPart = row.getCell(i).getPart();
-////					POIXMLDocumentPart rel = cellPart.createRelationship(XWPFRelation.HYPERLINK, XWPFFactory.getInstance());
-////					
-//					XWPFParagraph paragraph = row.getCell(i).getParagraphArray(0);
-//					XWPFRun run = paragraph.createRun();
-				
+					
+					// accumulate total for numbers column
                     if("转发数".equalsIgnoreCase(headers.get(i))){
                     	try{
                     		int m = Integer.parseInt(body);

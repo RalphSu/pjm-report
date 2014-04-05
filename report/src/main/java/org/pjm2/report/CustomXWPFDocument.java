@@ -5,6 +5,7 @@ import java.io.InputStream;
 
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFHyperlink;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlToken;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTNonVisualDrawingProps;
@@ -28,6 +29,10 @@ public class CustomXWPFDocument extends XWPFDocument {
     public CustomXWPFDocument(OPCPackage pkg) throws IOException {  
         super(pkg);  
     }  
+    
+    public void addHyperLink(XWPFHyperlink link) {
+    	hyperlinks.add(link);
+    }
   
     public void createPicture(int id, int width, int height) {  
         final int EMU = 9525;  
