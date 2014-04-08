@@ -5,6 +5,7 @@ import java.io.IOException;
 import junit.framework.TestCase;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 
 public class POIWriteTest extends TestCase {
 
@@ -25,4 +26,9 @@ public class POIWriteTest extends TestCase {
 //		System.out.println("image success");
 
 	}
+    
+//    @Test
+    public void readLinks() throws Exception {
+        XWPFWordExtractor.main(new String[] { POIWriteTest.class.getResource("/30-save-as-small.docx").getPath() });
+    }
 }

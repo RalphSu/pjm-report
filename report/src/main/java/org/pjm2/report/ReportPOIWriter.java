@@ -828,7 +828,7 @@ public class ReportPOIWriter {
 							doc.addHyperLink(link);
 
 							// 2. add a hyper link run at the right place.
-							// XWPFParagraph paragraph = row.getCell(i).getParagraphArray(0);
+//							XWPFParagraph paragraph = row.getCell(i).getParagraphArray(0);
 							XWPFParagraph graph = row.getCell(i).addParagraph();
 							graph.setStyle("HyperLink");
 							CTHyperlink ctLink = graph.getCTP().addNewHyperlink();
