@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import junit.framework.TestCase;
 
+import org.apache.poi.POIXMLDocument;
+import org.apache.poi.POIXMLTextExtractor;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 
@@ -28,7 +30,21 @@ public class POIWriteTest extends TestCase {
 	}
     
 //    @Test
-    public void readLinks() throws Exception {
-        XWPFWordExtractor.main(new String[] { POIWriteTest.class.getResource("/30-save-as-small.docx").getPath() });
-    }
+	public void testReadLinks() throws Exception {
+		String path = POIWriteTest.class.getResource("/30-save-as-small.docx").getPath();
+//		String path = "/home/ralph/dev/pjm2/reports/好声音/31.docx";
+		System.out.println(path);
+		POIXMLTextExtractor extractor = 
+				new XWPFWordExtractor(POIXMLDocument.openPackage(
+						path
+				));
+		extractor.getDocument().getPackageRelationship();
+//		XWPFWordExtractor.main(new String[] { path });
+		
+	}
+	
+	public void testWrite31job() throws Exception {
+		ReportGenerator generator = new ReportGenerator();
+		generator.startLoop();
+	}
 }

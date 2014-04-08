@@ -69,6 +69,7 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHyperlink;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblWidth;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
 import org.pjm2.report.ReportGenerator.TempalteSorter;
@@ -817,8 +818,6 @@ public class ReportPOIWriter {
 						} else {
 							displayText = body;
 						}
-						// set displayText
-//						row.getCell(i).setText(body);
 						// blocks to add hyper link
 						{
 							// 1. add a XWPFHyperlink to the doc. This code from @seeAlso XWPFDocument.initHyperlinks()
@@ -828,11 +827,16 @@ public class ReportPOIWriter {
 							doc.addHyperLink(link);
 
 							// 2. add a hyper link run at the right place.
-//							XWPFParagraph paragraph = row.getCell(i).getParagraphArray(0);
-							XWPFParagraph graph = row.getCell(i).addParagraph();
-							graph.setStyle("HyperLink");
+							List<XWPFParagraph> graphs = row.getCell(i).getParagraphs();
+									XWPFParagraph graph = null;
+									if (graphs != null && graphs.size() >= 0) {
+										graph = graphs.get(0);
+									} else {
+										graph = row.getCell(i).addParagraph();
+									}
 							CTHyperlink ctLink = graph.getCTP().addNewHyperlink();
-							XWPFHyperlinkRun linkRun = new XWPFHyperlinkRun(ctLink, graph.getCTP().addNewR(), graph);
+							CTR ctr = ctLink.addNewR();// CRITICAL :: Need the CTR add on CTHyperLink to be used for the following linkRun. 
+							XWPFHyperlinkRun linkRun = new XWPFHyperlinkRun(ctLink, ctr, graph);
 							linkRun.setHyperlinkId(link.getId());
 							linkRun.setText(displayText);
 							linkRun.setItalic(true);
