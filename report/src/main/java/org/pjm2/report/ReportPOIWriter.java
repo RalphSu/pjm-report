@@ -844,7 +844,7 @@ public class ReportPOIWriter {
 								graph.addRun(linkRun);
 							} catch (Exception e) {
 								logger.error("Write link failed with exception, set as normal link, exception is : ", e);
-								row.getCell(i).setText(body);
+								row.getCell(i).setText(displayText);
 							}
 						}
 					}
