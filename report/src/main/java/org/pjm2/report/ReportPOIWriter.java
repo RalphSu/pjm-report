@@ -828,27 +828,32 @@ public class ReportPOIWriter {
 						}
 						// blocks to add hyper link
 						{
-							// 1. add a XWPFHyperlink to the doc. This code from @seeAlso XWPFDocument.initHyperlinks()
-							String hypwLinkId = doc.getPackagePart().addExternalRelationship(body, XWPFRelation.HYPERLINK.getRelation()).getId();
-							
-							XWPFHyperlink link = new XWPFHyperlink(hypwLinkId, body);
-							doc.addHyperLink(link);
-
-							// 2. add a hyper link run at the right place.
-							List<XWPFParagraph> graphs = row.getCell(i).getParagraphs();
-							XWPFParagraph graph = null;
-							if (graphs != null && graphs.size() >= 0) {
-								graph = graphs.get(0);
-							} else {
-								graph = row.getCell(i).addParagraph();
+							try {
+								// 1. add a XWPFHyperlink to the doc. This code from @seeAlso XWPFDocument.initHyperlinks()
+								String hypwLinkId = doc.getPackagePart().addExternalRelationship(body, XWPFRelation.HYPERLINK.getRelation()).getId();
+								
+								XWPFHyperlink link = new XWPFHyperlink(hypwLinkId, body);
+								doc.addHyperLink(link);
+	
+								// 2. add a hyper link run at the right place.
+								List<XWPFParagraph> graphs = row.getCell(i).getParagraphs();
+										XWPFParagraph graph = null;
+										if (graphs != null && graphs.size() >= 0) {
+											graph = graphs.get(0);
+										} else {
+											graph = row.getCell(i).addParagraph();
+										}
+								CTHyperlink ctLink = graph.getCTP().addNewHyperlink();
+								CTR ctr = ctLink.addNewR();// CRITICAL :: Need the CTR add on CTHyperLink to be used for the following linkRun. 
+								XWPFHyperlinkRun linkRun = new XWPFHyperlinkRun(ctLink, ctr, graph);
+								linkRun.setHyperlinkId(link.getId());
+								linkRun.setText(displayText);
+								linkRun.setItalic(true);
+								graph.addRun(linkRun);
+							} catch (Exception e) {
+								logger.error("Write link failed with exception, set as normal link, exception is : ", e);
+								row.getCell(i).setText(displayText);
 							}
-							CTHyperlink ctLink = graph.getCTP().addNewHyperlink();
-							CTR ctr = ctLink.addNewR();// CRITICAL :: Need the CTR add on CTHyperLink to be used for the following linkRun. 
-							XWPFHyperlinkRun linkRun = new XWPFHyperlinkRun(ctLink, ctr, graph);
-							linkRun.setHyperlinkId(link.getId());
-							linkRun.setText(displayText);
-							linkRun.setItalic(true);
-							graph.addRun(linkRun);
 						}
 					}
 					else{
