@@ -773,8 +773,13 @@ public class ReportPOIWriter {
 		XWPFTableRow headRow = table.getRow(0);
 		List<XWPFTableCell> headerCells = headRow.getTableCells();
 		for (int i = 0; i < headers.size(); i++) {
-			headerCells.get(i).setText(headers.get(i));
-			headerCells.get(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
+            {// center based sort
+                XWPFParagraph graph = headerCells.get(i).addParagraph();
+                graph.setAlignment(ParagraphAlignment.CENTER);
+                XWPFRun run = graph.createRun();
+                run.setText(headers.get(i));
+                headerCells.get(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
+            }
         }
 		int splitnumber = 160/headerCells.size();
 		if(splitnumber>40)
@@ -782,7 +787,10 @@ public class ReportPOIWriter {
 		else if(splitnumber<20)
 			splitnumber=20;
         // set value to the table cells
-        Set<String> imagePaths = new HashSet<String>();
+		// a map from image path to URL
+        HashMap<String, String> imagePaths = new HashMap<String, String>();
+        // a map from image path to date
+        HashMap<String, String> imageDates= new HashMap<String, String>();
         final String[] IMAGE_FIELDS = new String[] { "链接", "日期" };
         int link_index = headers.indexOf(IMAGE_FIELDS[0]);
         int date_index = headers.indexOf(IMAGE_FIELDS[1]);
@@ -828,12 +836,12 @@ public class ReportPOIWriter {
 
 							// 2. add a hyper link run at the right place.
 							List<XWPFParagraph> graphs = row.getCell(i).getParagraphs();
-									XWPFParagraph graph = null;
-									if (graphs != null && graphs.size() >= 0) {
-										graph = graphs.get(0);
-									} else {
-										graph = row.getCell(i).addParagraph();
-									}
+							XWPFParagraph graph = null;
+							if (graphs != null && graphs.size() >= 0) {
+								graph = graphs.get(0);
+							} else {
+								graph = row.getCell(i).addParagraph();
+							}
 							CTHyperlink ctLink = graph.getCTP().addNewHyperlink();
 							CTR ctr = ctLink.addNewR();// CRITICAL :: Need the CTR add on CTHyperLink to be used for the following linkRun. 
 							XWPFHyperlinkRun linkRun = new XWPFHyperlinkRun(ctLink, ctr, graph);
@@ -892,7 +900,7 @@ public class ReportPOIWriter {
 				row.getCell(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
 			}
 
-			addImagePaths(imagePaths, template, IMAGE_FIELDS, link_index, date_index, line);
+			addImagePaths(imagePaths, imageDates, template, IMAGE_FIELDS, link_index, date_index, line);
 			
 		}
 		String msg = "共计"+lines.size()+"条记录";
@@ -915,21 +923,22 @@ public class ReportPOIWriter {
 		// picture
 		logger.info(String.format(" for report tempalte %s, classified %s,  report image paths are %s", template.getTemplate_type(),
 				template.getClassified(), StringUtils.join(imagePaths, "\n")));
-		writeModuleImage(doc, imagePaths);
+		writeModuleImage(doc, imagePaths, imageDates);
 	}
 
 	/*
 	 * Add the images paths to the images paths set.
 	 */
-	private void addImagePaths(Set<String> imagePaths,
-			ReportTemplate template, final String[] IMAGE_FIELDS, int link_index, int date_index,
+	private void addImagePaths(HashMap<String, String> imagePaths,
+			HashMap<String, String> imageDate, ReportTemplate template, final String[] IMAGE_FIELDS, int link_index, int date_index,
 			ReportLine line) {
 		if (Dao.SUMMARY_TEMPLATE_TYPE.equals(template.getTemplate_type())) {
 			final String IMAGE_FIELD_NAME = "截图";
 			// summary doesn't have link, but the line has an screenshot field. Use this field value for the file path
 			Object path = line.getColumns().get(IMAGE_FIELD_NAME);
 			if ( path != null && !path.toString().isEmpty()) {
-				imagePaths.add(path.toString());
+				imagePaths.put(path.toString(), null);
+				imageDate.put(path.toString(), null);
 			}
 		} else {
 			// find matched image for each line if any by matching the url and
@@ -940,13 +949,16 @@ public class ReportPOIWriter {
 				if (link_obj != null && date_obj != null) {
 					List<String> path = dao.findImagePathByUrl(
 							link_obj.toString(), date_obj.toString());
-					imagePaths.addAll(path);
+					for (String p : path) {
+					    imagePaths.put(p, link_obj.toString());
+                        imageDate.put(p, date_obj.toString());
+					}
 				}
 			}
 		}
 	}
 
-	private void writeModuleImage(CustomXWPFDocument doc, Set<String> imagePaths) {
+	private void writeModuleImage(CustomXWPFDocument doc, HashMap<String, String> imagePaths, HashMap<String, String> imageDates) {
 		logger.info("start write image for module... ");
 		String prefix = System.getenv("PJM_HOME");
 		if (prefix == null)
@@ -955,7 +967,7 @@ public class ReportPOIWriter {
 			prefix = " ../../pjm2/";
 		
 		System.out.println("prefix is " + prefix);
-		for (String combinedPath : imagePaths) {
+		for (String combinedPath : imagePaths.keySet()) {
 			logger.info(" find a combinbed image path: " + combinedPath);
 			if (combinedPath == null ){
 				continue;
@@ -995,6 +1007,8 @@ public class ReportPOIWriter {
 					doc.createPicture(imageid,
 							CHART_WIDTH, CHART_HEIGHT);
 					
+                    // add image url and date
+                    createImageUrlRun(doc, imagePaths.get(path), imageDates.get(path));
 				} catch (Throwable t) {
 					logger.error("write module image failed. Path is " + path,
 							t);
@@ -1011,6 +1025,44 @@ public class ReportPOIWriter {
 			}
 		}
     }
+
+    private void createImageUrlRun(CustomXWPFDocument doc, String url, String date) {
+        if (StringUtils.isEmpty(url)) {
+            return;
+        }
+        // 1. add a XWPFHyperlink to the doc. This code from @seeAlso XWPFDocument.initHyperlinks()
+        XWPFHyperlink link = null;
+        try {
+            String hypwLinkId = doc.getPackagePart().addExternalRelationship(url, XWPFRelation.HYPERLINK.getRelation()).getId();
+            link = new XWPFHyperlink(hypwLinkId, url);
+            doc.addHyperLink(link);
+        } catch (Exception e) {
+            logger.error("add image url failed due to url is broken! ", e);
+        }
+        // 2. add a hyper link run at the right place.
+        XWPFParagraph graph = doc.createParagraph();
+        XWPFRun urlRun = null;
+        if (link != null) {
+            CTHyperlink ctLink = graph.getCTP().addNewHyperlink();
+            CTR ctr = ctLink.addNewR();// CRITICAL :: Need the CTR add on
+                                       // CTHyperLink to be used for the
+                                       // following linkRun.
+            XWPFHyperlinkRun linkRun = new XWPFHyperlinkRun(ctLink, ctr, graph);
+            linkRun.setHyperlinkId(link.getId());
+            String displayText = url;
+            if (url.length() > 60) {
+                displayText = url.substring(0, 60) + "...";
+            }
+            linkRun.setText(displayText);
+            linkRun.setItalic(true);
+            urlRun = linkRun;
+        } else {
+            urlRun = graph.createRun();
+            urlRun.setText(url);
+        }
+        graph.addRun(urlRun);
+        // FIXME : do we need date?
+}
 
     private Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> shuffle(Map<ReportTemplate, List<ReportLine>> reportData) {
 		// {template_type => [ report_template => List<ReportLine> ] }
