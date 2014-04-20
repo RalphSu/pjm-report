@@ -980,6 +980,7 @@ public class ReportPOIWriter {
 			String[] paths = StringUtils.split(combinedPath, ";");
 			
 			for (String path : paths) {
+				String initPath = path;
 				FileInputStream fis = null;
 				// detect extension
 				int index = path.lastIndexOf('.');
@@ -1013,7 +1014,7 @@ public class ReportPOIWriter {
 							CHART_WIDTH, CHART_HEIGHT);
 					
                     // add image url and date
-                    createImageUrlRun(doc, imagePaths.get(path), imageDates.get(path));
+                    createImageUrlRun(doc, imagePaths.get(initPath), imageDates.get(initPath));
 				} catch (Throwable t) {
 					logger.error("write module image failed. Path is " + path,
 							t);
