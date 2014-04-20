@@ -45,7 +45,8 @@ public abstract class AbstractDAO  implements IEntityDao {
 		List<?> ids;
 		if (dateClassifiedId >= 0) {
 			String start = AbstractDAO.parseDateValue(starTime);
-			String end = AbstractDAO.parseDateValue(endTime);
+			Date shift1DayLater = shiftOneDayTime(endTime);
+			String end = AbstractDAO.parseDateValue(shift1DayLater);
 			StringBuilder sql = new StringBuilder(getItemByDateSql());
 			if(template.getTemplate_type().equals(Dao.WEIXIN_TEMPLATE_TYPE)||
 					template.getTemplate_type().equals(Dao.SUMMARY_TEMPLATE_TYPE)){
@@ -86,6 +87,11 @@ public abstract class AbstractDAO  implements IEntityDao {
 		return AbstractDAO.convertToLine(result);
 	}
 
+
+	private Date shiftOneDayTime(Date endTime) {
+		// simply construct a new date which is a whole later than the given
+		return new Date(endTime.getTime() + 24l * 3600l * 1000l);
+	}
 
 	private void fillTemplateColumName(ReportTemplate template) {
 		String sql = getColumnNameSql();

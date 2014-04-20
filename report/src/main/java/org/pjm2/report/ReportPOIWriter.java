@@ -7,6 +7,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,6 +28,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -92,6 +95,9 @@ public class ReportPOIWriter {
 	private static final int CHART_HEIGHT=280;
 	private final Map<String, Integer> picturesMap = new HashMap<String, Integer>();
 	private final TempalteSorter sorter;
+	private static int IN_TABLE_FONT_SIZE = 8;
+	private static int table_max_width = 8000;
+	private static int IMAGE_MAX_WIDTH = 500;
 
 	public ReportPOIWriter(Dao dao, ReportTask task, TempalteSorter sorter) {
 		this.dao = dao;
@@ -107,9 +113,9 @@ public class ReportPOIWriter {
 				XWPFRun title = p1.createRun();
 				p1.setAlignment(ParagraphAlignment.CENTER);
 				p1.setVerticalAlignment(TextAlignment.TOP);
+				p1.setStyle("Title");
 				title.setBold(true);
 				title.setFontSize(20);
-//				title.setFontFamily("微软雅黑");
 				title.setText(String.format("%s",task.getProjectName()));
 			}
 			XWPFParagraph p2 = doc.createParagraph();
@@ -133,6 +139,7 @@ public class ReportPOIWriter {
 
 				{
 					XWPFRun title2 = p2.createRun();
+					p2.setStyle("Subtitle");
 					p2.setAlignment(ParagraphAlignment.CENTER);
 					p2.setVerticalAlignment(TextAlignment.TOP);
 					title2.setBold(false);
@@ -205,10 +212,6 @@ public class ReportPOIWriter {
 				}
 			}
 			
-//			for (Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e : sortedData.entrySet()) {
-//				writeTemplateType(doc, e);
-//			}
-			
 				writeImageAnaylysis(doc,reportData);	
 			
 			save(doc);
@@ -229,7 +232,6 @@ public class ReportPOIWriter {
 		}
 		String path = prefix + "/reports/" + this.task.getProjectName() + "/";
 		// check parent directory
-//		path = "/home/likewise-open/CORP/liasu/2.docx";
 		try{
 			FileUtils.forceMkdir(new File(path));	
 		}catch(Throwable t){
@@ -265,43 +267,19 @@ public class ReportPOIWriter {
 			}
 		}
 	}
-
-//	private void writeTemplateType(CustomXWPFDocument doc, Entry<String, List<Entry<ReportTemplate, List<ReportLine>>>> e) {
-//		XWPFParagraph templateParagraph = doc.createParagraph();
-////		templateParagraph.setAlignment(ParagraphAlignment.LEFT);
-////		templateParagraph.setVerticalAlignment(TextAlignment.CENTER);
-//		templateParagraph.setStyle("Heading1");
-//		XWPFRun templateRun = templateParagraph.createRun();
-//		templateRun.setFontSize(20);
-//		templateRun.setText(e.getKey().substring(0, e.getKey().length() - 2)); // assume last two word is "模板"
-////		templateRun.setBold(true);
-//
-//		int i = 0;
-//		for (Entry<ReportTemplate, List<ReportLine>> module : e.getValue()) {
-//			i++;
-//			writeModule(doc, i, module.getKey(), module.getValue());
-//		}
-//
-//		
-//	}
 	
 	private void writeTemplateType(CustomXWPFDocument doc, String key,List<Entry<ReportTemplate, List<ReportLine>>> data) {
 		XWPFParagraph templateParagraph = doc.createParagraph();
-//		templateParagraph.setAlignment(ParagraphAlignment.LEFT);
-//		templateParagraph.setVerticalAlignment(TextAlignment.CENTER);
 		templateParagraph.setStyle("Heading1");
 		XWPFRun templateRun = templateParagraph.createRun();
 		templateRun.setFontSize(20);
 		templateRun.setText(key.substring(0, key.length() - 2)); // assume last two word is "模板"
-//		templateRun.setBold(true);
 
 		int i = 0;
 		for (Entry<ReportTemplate, List<ReportLine>> module : data) {
 			i++;
 			writeModule(doc, i, module.getKey(), module.getValue());
 		}
-
-		
 	}
 	
 	public void writeImageAnaylysis( CustomXWPFDocument doc, Map<ReportTemplate, List<ReportLine>> reportData) {
@@ -767,7 +745,7 @@ public class ReportPOIWriter {
 		XWPFTable table = doc.createTable(lines.size() + 1, headers.size());
 		CTTblWidth width = table.getCTTbl().addNewTblPr().addNewTblW();
 		width.setType(STTblWidth.DXA);
-		width.setW(BigInteger.valueOf(8000));
+		width.setW(BigInteger.valueOf(table_max_width));
 		// 设置上下左右四个方向的距离，可以将表格撑	
 //		table.setCellMargins(20, 20, 20, 20);
 		XWPFTableRow headRow = table.getRow(0);
@@ -778,6 +756,7 @@ public class ReportPOIWriter {
                 graph.setAlignment(ParagraphAlignment.CENTER);
                 XWPFRun run = graph.createRun();
                 run.setText(headers.get(i));
+                run.setFontSize(IN_TABLE_FONT_SIZE);
                 headerCells.get(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
             }
         }
@@ -848,6 +827,7 @@ public class ReportPOIWriter {
 								XWPFHyperlinkRun linkRun = new XWPFHyperlinkRun(ctLink, ctr, graph);
 								linkRun.setHyperlinkId(link.getId());
 								linkRun.setText(displayText);
+								linkRun.setFontSize(IN_TABLE_FONT_SIZE);
 								linkRun.setItalic(true);
 								graph.addRun(linkRun);
 							} catch (Exception e) {
@@ -857,7 +837,15 @@ public class ReportPOIWriter {
 						}
 					}
 					else{
-						row.getCell(i).setText(body);
+						List<XWPFParagraph> graphs = row.getCell(i).getParagraphs();
+						XWPFRun run = null;
+						if (graphs == null || graphs.isEmpty()) {
+							run = row.getCell(i).addParagraph().createRun();
+						} else {
+							run = graphs.get(0).createRun();
+						}
+						run.setText(body);
+						run.setFontSize(IN_TABLE_FONT_SIZE);
 					}
 					
 					// accumulate total for numbers column
@@ -1009,12 +997,11 @@ public class ReportPOIWriter {
 						imageid = picturesMap.get(relationId);
 					}
 					
+					Size size = getImageSize(path);
 					logger.info(" relationId is " + relationId+" imageId="+imageid);
-					doc.createPicture(imageid,
-							CHART_WIDTH, CHART_HEIGHT);
-					
-                    // add image url and date
-                    createImageUrlRun(doc, imagePaths.get(initPath), imageDates.get(initPath));
+					doc.createPicture(imageid, size.hor, size.ver);
+        // add image url and date
+        createImageUrlRun(doc, imagePaths.get(initPath), imageDates.get(initPath));
 				} catch (Throwable t) {
 					logger.error("write module image failed. Path is " + path,
 							t);
@@ -1031,6 +1018,30 @@ public class ReportPOIWriter {
 			}
 		}
     }
+	private static class Size {
+		int hor;
+		int ver;
+		Size(int hor, int ver) {
+			this.hor = hor;
+			this.ver = ver;
+		}
+	}
+	private Size getImageSize(String path) {
+		try {
+			File picture = new File(path);
+			BufferedImage sourceImg = ImageIO.read(new FileInputStream(picture));
+			int width = sourceImg.getWidth();
+			int height = sourceImg.getHeight();
+			if (sourceImg.getWidth() > IMAGE_MAX_WIDTH) {
+				width = IMAGE_MAX_WIDTH;
+			}
+			height = sourceImg.getHeight() * width / sourceImg.getWidth();
+			return new Size(width, height);
+		}catch (Exception e) {
+			logger.error(" check image size error, use default : " + CHART_WIDTH + ", " + CHART_HEIGHT + "!", e);
+			return new Size(CHART_WIDTH, CHART_HEIGHT);
+		}
+	}
 
     private void createImageUrlRun(CustomXWPFDocument doc, String url, String date) {
         if (StringUtils.isEmpty(url)) {
@@ -1306,9 +1317,6 @@ public class ReportPOIWriter {
     	}catch(Exception e){
     		e.printStackTrace();
     	}
-    	
-    	
-    	
 	}
     
     public static  class DaoImpl extends Dao{
