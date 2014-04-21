@@ -88,6 +88,9 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class ReportPOIWriter {
+	private static final String 所属话题 = "所属话题";
+	private static final String 微博直发 = "微博直发";
+	private static final String 微博类模板 = "微博类模板";
 	private static final Logger logger = LoggerFactory.getLogger(ReportPOIWriter.class);
 	private final Dao dao;
 	private final ReportTask task;
@@ -177,7 +180,7 @@ public class ReportPOIWriter {
 				}
 			}
 			{
-				String key ="微博类模板";
+				String key =微博类模板;
 				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
 				if(data!=null){
 					writeTemplateType(doc, key,data);
@@ -278,7 +281,12 @@ public class ReportPOIWriter {
 		int i = 0;
 		for (Entry<ReportTemplate, List<ReportLine>> module : data) {
 			i++;
-			writeModule(doc, i, module.getKey(), module.getValue());
+//			if (key.equals(微博类模板) && 微博直发.equals(module.getKey().getClassified())) {
+				// special handling for weibo direct
+				
+//			} else {
+				writeModule(doc, i, module.getKey(), module.getValue());
+//			}
 		}
 	}
 	
@@ -717,54 +725,73 @@ public class ReportPOIWriter {
 		moduleName.setFontSize(14);
 		moduleName.setText(template.getClassified());
 		
-		XWPFParagraph labelParagraph = doc.createParagraph();
-		XWPFRun moduleNumber = labelParagraph.createRun();
-		moduleNumber.setFontSize(10);
+		// weibo direct related handling structure
+		final boolean isWeiboDirect = 微博类模板.equals(template.getTemplate_type()) && 微博直发.equals(template.getClassified());
+		Map<String, List<ReportLine>> weiboDirectByTopic = null;
 		
 		logger.info(String.format(" for report tempalte %s, classified %s, size are %s", template.getTemplate_type(),
 				template.getClassified(),lines.size()));
 
 		// table
-		List<String> headers = template.getColumnHeaders();
+		List<String> headers = new ArrayList<String>(template.getColumnHeaders());
 		List<Integer> widths = new ArrayList<Integer>(headers.size());
-		int base=50;
-		if(headers.size()!=0){
-			base=300/headers.size();	
-		}
-		
-		
-		for (int i = 0; i < headers.size(); i++ ){
-			int columnwidth=base;
-			if("标题".equalsIgnoreCase(headers.get(i))){
-				columnwidth+=10;
-			}else if("链接".equalsIgnoreCase(headers.get(i))){
-				columnwidth+=20;
+		{
+			// detect non table column, remove from table columns
+			if (isWeiboDirect && (headers.indexOf(所属话题) >= 0)) {
+				headers.remove(所属话题);
+				// aggregate the report line based on 所属话题 
+				weiboDirectByTopic = aggregateWeiboDirectByTopic(template, lines);
 			}
-			widths.add(columnwidth);
+			negotiateHeaderWidth(headers, widths);
 		}
+		
+		if (weiboDirectByTopic == null) {
+			XWPFParagraph labelParagraph = doc.createParagraph();
+			XWPFRun moduleNumber = labelParagraph.createRun();
+			moduleNumber.setFontSize(10);
+			writeModuleTable(doc, template, lines, moduleNumber, headers, widths);
+		} else {
+			for (Entry<String, List<ReportLine>> topicEntry : weiboDirectByTopic.entrySet()) {
+				XWPFParagraph topicParagraph = doc.createParagraph();
+				topicParagraph.setStyle("Heading3");
+				XWPFRun topicRun = topicParagraph.createRun();
+				topicRun.setText(所属话题 + " : " + topicEntry.getKey());
+				topicRun.setFontSize(12);
+				XWPFParagraph labelParagraph = doc.createParagraph();
+				XWPFRun moduleNumber = labelParagraph.createRun();
+				moduleNumber.setFontSize(10);
+				writeModuleTable(doc, template, topicEntry.getValue(), moduleNumber, headers, widths);
+			}
+		}
+	}
+
+	private void writeModuleTable(CustomXWPFDocument doc,
+			ReportTemplate template, List<ReportLine> lines,
+			XWPFRun moduleNumber, List<String> headers, List<Integer> widths) {
+
 		XWPFTable table = doc.createTable(lines.size() + 1, headers.size());
 		CTTblWidth width = table.getCTTbl().addNewTblPr().addNewTblW();
 		width.setType(STTblWidth.DXA);
 		width.setW(BigInteger.valueOf(table_max_width));
-		// 设置上下左右四个方向的距离，可以将表格撑	
-//		table.setCellMargins(20, 20, 20, 20);
 		XWPFTableRow headRow = table.getRow(0);
 		List<XWPFTableCell> headerCells = headRow.getTableCells();
 		for (int i = 0; i < headers.size(); i++) {
-            {// center based sort
-                XWPFParagraph graph = headerCells.get(i).addParagraph();
-                graph.setAlignment(ParagraphAlignment.CENTER);
-                XWPFRun run = graph.createRun();
-                run.setText(headers.get(i));
-                run.setFontSize(IN_TABLE_FONT_SIZE);
-                headerCells.get(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
-            }
-        }
+			{
+				// center based sort
+				XWPFParagraph graph = headerCells.get(i).addParagraph();
+				graph.setAlignment(ParagraphAlignment.CENTER);
+				XWPFRun run = graph.createRun();
+				run.setText(headers.get(i));
+				run.setFontSize(IN_TABLE_FONT_SIZE);
+				headerCells.get(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
+			}
+		}
 		int splitnumber = 160/headerCells.size();
-		if(splitnumber>40)
+		if(splitnumber>40) {
 			splitnumber=40;
-		else if(splitnumber<20)
+		} else if(splitnumber<20) {
 			splitnumber=20;
+		}
         // set value to the table cells
 		// a map from image path to URL
         HashMap<String, String> imagePaths = new HashMap<String, String>();
@@ -917,6 +944,71 @@ public class ReportPOIWriter {
 		logger.info(String.format(" for report tempalte %s, classified %s,  report image paths are %s", template.getTemplate_type(),
 				template.getClassified(), StringUtils.join(imagePaths, "\n")));
 		writeModuleImage(doc, imagePaths, imageDates);
+	}
+
+	private Map<String, List<ReportLine>> aggregateWeiboDirectByTopic(ReportTemplate template, List<ReportLine> lines) {
+		Map<String, List<ReportLine>> aggregates = new HashMap<String, List<ReportLine>>();
+		for (ReportLine line : lines) {
+			String topic = (String) line.getColumns().get(所属话题);
+			List<ReportLine> topicLines = new ArrayList<ReportLine>();
+			if (aggregates.containsKey(topic)) {
+				topicLines = aggregates.get(topic);
+			} else {
+				topicLines = new ArrayList<ReportLine>();
+				aggregates.put(topic, topicLines);
+			}
+			topicLines.add(line);
+		}
+		return aggregates;
+	}
+
+	private void negotiateHeaderWidth(List<String> headers, List<Integer> widths) {
+		int base = 50;
+		final int TABLE_WIDTH = 300;
+		final int DATE_WIDTH = 50;
+		final int TITLE_WIDTH = 60;
+		final int LINK_WIDTH = 80;
+		int dateWidth = 0;
+		int titleWidth = 0;
+		int linkWidth = 0;
+		int fixColNumber = 0;
+		int dynamicColCharNum = 0;
+		for (int i = 0; i < headers.size(); i++) {
+			if ("标题".equalsIgnoreCase(headers.get(i))) {
+				titleWidth = TITLE_WIDTH;
+				fixColNumber++;
+			} else if ("链接".equalsIgnoreCase(headers.get(i))) {
+				linkWidth = LINK_WIDTH;
+				fixColNumber++;
+			} else if ("日期".equalsIgnoreCase(headers.get(i))) {
+				dateWidth = DATE_WIDTH;
+				fixColNumber++;
+			} else {
+				dynamicColCharNum += headers.get(i).length();
+			}
+		}
+		int leftWidth = TABLE_WIDTH - dateWidth - titleWidth - linkWidth;
+		if ((headers.size() - fixColNumber) > 0) {
+			base = leftWidth / (headers.size() - fixColNumber);
+		}
+		for (int i = 0; i < headers.size(); i++) {
+			if ("标题".equalsIgnoreCase(headers.get(i))) {
+				widths.add(titleWidth);
+			} else if ("链接".equalsIgnoreCase(headers.get(i))) {
+				widths.add(linkWidth);
+			} else if ("日期".equalsIgnoreCase(headers.get(i))) {
+				widths.add(dateWidth);
+			} else if (dynamicColCharNum > 0) {
+				int width = (leftWidth * headers.get(i).length()) / dynamicColCharNum;
+				if (width < 5) {
+					width = 5;// minimum
+				}
+				widths.add(width);
+			} else {
+				// default case
+				widths.add(base);
+			}
+		}
 	}
 
 	/*
