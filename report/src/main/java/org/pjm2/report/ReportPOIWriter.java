@@ -743,6 +743,8 @@ public class ReportPOIWriter {
 				weiboDirectByTopic = aggregateWeiboDirectByTopic(template, lines);
 			}
 			negotiateHeaderWidth(headers, widths);
+			logger.info(String.format(" Width array for template %s, classified %s are widths: %s ", template.getTemplate_type(),
+			        template.getClassified(), widths.toString()));
 		}
 		
 		if (weiboDirectByTopic == null) {
@@ -815,7 +817,7 @@ public class ReportPOIWriter {
 				if (obj != null) {
 					String body = obj.toString();
 					logger.debug("header column name: " + headers.get(i) + " , value is: " + body);
-					if("链接".equalsIgnoreCase(headers.get(i))){
+                    if ("链接".equalsIgnoreCase(headers.get(i))) {
 						String displayText = body;
 						if(body.length()>splitnumber){
 						  String part1=body.substring(0,splitnumber);
@@ -917,6 +919,7 @@ public class ReportPOIWriter {
 				} else {
 					row.getCell(i).setText("");
 				}
+				logger.debug("header column name: " + headers.get(i) + " , width is: " + widths.get(i));
 				row.getCell(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
 			}
 
