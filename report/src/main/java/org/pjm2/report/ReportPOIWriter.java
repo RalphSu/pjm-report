@@ -753,6 +753,7 @@ public class ReportPOIWriter {
 			moduleNumber.setFontSize(10);
 			writeModuleTable(doc, template, lines, moduleNumber, headers, widths);
 		} else {
+		    // multiple tables when the lines are aggregated
 			for (Entry<String, List<ReportLine>> topicEntry : weiboDirectByTopic.entrySet()) {
 				XWPFParagraph topicParagraph = doc.createParagraph();
 				topicParagraph.setStyle("Heading3");
@@ -780,7 +781,13 @@ public class ReportPOIWriter {
 		for (int i = 0; i < headers.size(); i++) {
 			{
 				// center based sort
-				XWPFParagraph graph = headerCells.get(i).addParagraph();
+			    List<XWPFParagraph> graphs = headerCells.get(i).getParagraphs();
+                XWPFParagraph graph = null;
+                if (graphs != null && graphs.size() >= 0) {
+                    graph = graphs.get(0);
+                } else {
+                    graph = headerCells.get(i).addParagraph();
+                }
 				graph.setAlignment(ParagraphAlignment.CENTER);
 				XWPFRun run = graph.createRun();
 				run.setText(headers.get(i));
@@ -845,12 +852,12 @@ public class ReportPOIWriter {
 	
 								// 2. add a hyper link run at the right place.
 								List<XWPFParagraph> graphs = row.getCell(i).getParagraphs();
-										XWPFParagraph graph = null;
-										if (graphs != null && graphs.size() >= 0) {
-											graph = graphs.get(0);
-										} else {
-											graph = row.getCell(i).addParagraph();
-										}
+								XWPFParagraph graph = null;
+								if (graphs != null && graphs.size() >= 0) {
+									graph = graphs.get(0);
+								} else {
+									graph = row.getCell(i).addParagraph();
+								}
 								CTHyperlink ctLink = graph.getCTP().addNewHyperlink();
 								CTR ctr = ctLink.addNewR();// CRITICAL :: Need the CTR add on CTHyperLink to be used for the following linkRun. 
 								XWPFHyperlinkRun linkRun = new XWPFHyperlinkRun(ctLink, ctr, graph);
