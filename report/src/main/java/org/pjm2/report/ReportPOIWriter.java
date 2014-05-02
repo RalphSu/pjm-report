@@ -73,7 +73,13 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHyperlink;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTbl;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblGrid;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblGridCol;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblLayoutType;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblWidth;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblLayoutType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
 import org.pjm2.report.ReportGenerator.TempalteSorter;
 import org.pjm2.report.db.model.ReportTask;
@@ -773,9 +779,25 @@ public class ReportPOIWriter {
 			XWPFRun moduleNumber, List<String> headers, List<Integer> widths) {
 
 		XWPFTable table = doc.createTable(lines.size() + 1, headers.size());
-		CTTblWidth width = table.getCTTbl().addNewTblPr().addNewTblW();
+		CTTbl ctTbl = table.getCTTbl();
+		CTTblPr tblPr = ctTbl.getTblPr();
+		if (tblPr == null) {
+			tblPr = ctTbl.addNewTblPr();
+		}
+		CTTblGrid grid = ctTbl.addNewTblGrid();
+		for (Integer i : widths) {
+			CTTblGridCol col = grid.addNewGridCol();
+			col.setW(BigInteger.valueOf(i));
+		}
+		CTTblLayoutType layout = tblPr.addNewTblLayout();
+		layout.setType(STTblLayoutType.FIXED);
+		CTTblWidth width = tblPr.getTblW();
+		if (width == null) {
+			width = tblPr.addNewTblW();
+		}
 		width.setType(STTblWidth.DXA);
 		width.setW(BigInteger.valueOf(table_max_width));
+
 		XWPFTableRow headRow = table.getRow(0);
 		List<XWPFTableCell> headerCells = headRow.getTableCells();
 		for (int i = 0; i < headers.size(); i++) {
@@ -792,7 +814,9 @@ public class ReportPOIWriter {
 				XWPFRun run = graph.createRun();
 				run.setText(headers.get(i));
 				run.setFontSize(IN_TABLE_FONT_SIZE);
-				headerCells.get(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
+				CTTblWidth colWidth = headerCells.get(i).getCTTc().addNewTcPr().addNewTcW();
+				colWidth.setW(BigInteger.valueOf(widths.get(i)));
+				colWidth.setType(STTblWidth.DXA);
 			}
 		}
 		int splitnumber = 160/headerCells.size();
@@ -823,7 +847,7 @@ public class ReportPOIWriter {
 				Object obj = line.getColumns().get(headers.get(i));
 				if (obj != null) {
 					String body = obj.toString();
-					logger.debug("header column name: " + headers.get(i) + " , value is: " + body);
+					logger.info("header column name: " + headers.get(i) + " , value is: " + body);
                     if ("链接".equalsIgnoreCase(headers.get(i))) {
 						String displayText = body;
 						if(body.length()>splitnumber){
@@ -926,8 +950,10 @@ public class ReportPOIWriter {
 				} else {
 					row.getCell(i).setText("");
 				}
-				logger.debug("header column name: " + headers.get(i) + " , width is: " + widths.get(i));
-				row.getCell(i).getCTTc().addNewTcPr().addNewTcW().setW(BigInteger.valueOf(widths.get(i)));
+				logger.info("header column name: " + headers.get(i) + " , width is: " + widths.get(i));
+				CTTblWidth colWidth = row.getCell(i).getCTTc().addNewTcPr().addNewTcW();
+				colWidth.setW(BigInteger.valueOf(widths.get(i)));
+				colWidth.setType(STTblWidth.DXA);
 			}
 
 			addImagePaths(imagePaths, imageDates, template, IMAGE_FIELDS, link_index, date_index, line);
@@ -973,11 +999,11 @@ public class ReportPOIWriter {
 	}
 
 	private void negotiateHeaderWidth(List<String> headers, List<Integer> widths) {
-		int base = 50;
-		final int TABLE_WIDTH = 300;
-		final int DATE_WIDTH = 50;
-		final int TITLE_WIDTH = 60;
-		final int LINK_WIDTH = 80;
+		int base = 500;
+		final int TABLE_WIDTH = table_max_width - 500; // preserve some over-head
+		final int DATE_WIDTH = 1000;
+		final int TITLE_WIDTH = 1000;
+		final int LINK_WIDTH = 2000;
 		int dateWidth = 0;
 		int titleWidth = 0;
 		int linkWidth = 0;
@@ -1019,6 +1045,8 @@ public class ReportPOIWriter {
 				widths.add(base);
 			}
 		}
+		
+		logger.info("negotiated header column : " + headers + " , widths are : " + widths);
 	}
 
 	/*
