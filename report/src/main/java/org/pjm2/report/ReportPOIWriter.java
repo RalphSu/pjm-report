@@ -94,6 +94,8 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class ReportPOIWriter {
+	private static final String 截图 = "截图";
+	private static final String 图片 = "图片";
 	private static final String 所属话题 = "所属话题";
 	private static final String 微博直发 = "微博直发";
 	private static final String 微博类模板 = "微博类模板";
@@ -748,6 +750,14 @@ public class ReportPOIWriter {
 				// aggregate the report line based on 所属话题 
 				weiboDirectByTopic = aggregateWeiboDirectByTopic(template, lines);
 			}
+			// remove image column
+			if (headers.indexOf(图片) >= 0) {
+				headers.remove(图片);
+			}
+			// remove image column
+			if (headers.indexOf(截图) >= 0) {
+				headers.remove(截图);
+			}
 			negotiateHeaderWidth(headers, widths);
 			logger.info(String.format(" Width array for template %s, classified %s are widths: %s ", template.getTemplate_type(),
 			        template.getClassified(), widths.toString()));
@@ -1056,7 +1066,7 @@ public class ReportPOIWriter {
 			HashMap<String, String> imageDate, ReportTemplate template, final String[] IMAGE_FIELDS, int link_index, int date_index,
 			ReportLine line) {
 		if (Dao.SUMMARY_TEMPLATE_TYPE.equals(template.getTemplate_type())) {
-			final String IMAGE_FIELD_NAME = "截图";
+			final String IMAGE_FIELD_NAME = 截图;
 			// summary doesn't have link, but the line has an screenshot field. Use this field value for the file path
 			Object path = line.getColumns().get(IMAGE_FIELD_NAME);
 			if ( path != null && !path.toString().isEmpty()) {
