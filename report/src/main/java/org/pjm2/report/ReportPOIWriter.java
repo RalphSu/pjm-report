@@ -107,8 +107,22 @@ public class ReportPOIWriter {
 	private final Map<String, Integer> picturesMap = new HashMap<String, Integer>();
 	private final TempalteSorter sorter;
 	private static int IN_TABLE_FONT_SIZE = 8;
-	private static int table_max_width = 8000;
+	private static int table_max_width = 8200;
 	private static int IMAGE_MAX_WIDTH = 500;
+	
+	private static final Map<String, Integer> FIXED_COLUMN_WIDTH = new HashMap<String, Integer>();
+	static {
+		FIXED_COLUMN_WIDTH.put("标题", 1428);
+		FIXED_COLUMN_WIDTH.put("日期", 1065);
+		FIXED_COLUMN_WIDTH.put("链接", 2131);
+		FIXED_COLUMN_WIDTH.put("微博内容", 1491);
+		FIXED_COLUMN_WIDTH.put("分享链接内容", 737);
+		FIXED_COLUMN_WIDTH.put("主题", 1360);
+		FIXED_COLUMN_WIDTH.put("位置", 1054);
+		FIXED_COLUMN_WIDTH.put("内容", 1491);
+		FIXED_COLUMN_WIDTH.put("热门微博排名", 793);
+		FIXED_COLUMN_WIDTH.put("是否推荐", 566);
+	}
 
 	public ReportPOIWriter(Dao dao, ReportTask task, TempalteSorter sorter) {
 		this.dao = dao;
@@ -759,8 +773,8 @@ public class ReportPOIWriter {
 				headers.remove(截图);
 			}
 			negotiateHeaderWidth(headers, widths);
-			logger.info(String.format(" Width array for template %s, classified %s are widths: %s ", template.getTemplate_type(),
-			        template.getClassified(), widths.toString()));
+			logger.info(String.format(" Width array for template %s, classified %s, headers are: %, widths: %s ", template.getTemplate_type(),
+			        template.getClassified(), headers.toString(), widths.toString()));
 		}
 		
 		if (weiboDirectByTopic == null) {
@@ -1009,45 +1023,34 @@ public class ReportPOIWriter {
 	}
 
 	private void negotiateHeaderWidth(List<String> headers, List<Integer> widths) {
-		int base = 500;
-		final int TABLE_WIDTH = table_max_width - 500; // preserve some over-head
-		final int DATE_WIDTH = 1000;
-		final int TITLE_WIDTH = 1000;
-		final int LINK_WIDTH = 2000;
-		int dateWidth = 0;
-		int titleWidth = 0;
-		int linkWidth = 0;
+		int base = 50;
+		final int TABLE_WIDTH = table_max_width - 200; // preserve some over-head
 		int fixColNumber = 0;
+		int totalFixColWidth = 0;
 		int dynamicColCharNum = 0;
 		for (int i = 0; i < headers.size(); i++) {
-			if ("标题".equalsIgnoreCase(headers.get(i))) {
-				titleWidth = TITLE_WIDTH;
+			if (FIXED_COLUMN_WIDTH.containsKey(headers.get(i))) {
 				fixColNumber++;
-			} else if ("链接".equalsIgnoreCase(headers.get(i))) {
-				linkWidth = LINK_WIDTH;
-				fixColNumber++;
-			} else if ("日期".equalsIgnoreCase(headers.get(i))) {
-				dateWidth = DATE_WIDTH;
-				fixColNumber++;
+				totalFixColWidth += FIXED_COLUMN_WIDTH.get(headers.get(i));
 			} else {
 				dynamicColCharNum += headers.get(i).length();
 			}
 		}
-		int leftWidth = TABLE_WIDTH - dateWidth - titleWidth - linkWidth;
+		int leftWidth = TABLE_WIDTH - totalFixColWidth;
+		if (leftWidth <= 0) {
+			logger.error("Negotiate header width encounter the sum(fix-column-width) bigger than table width! Header are : " + headers.toString() + 
+					" Predefined width maps are : " + FIXED_COLUMN_WIDTH.toString());
+		}
 		if ((headers.size() - fixColNumber) > 0) {
 			base = leftWidth / (headers.size() - fixColNumber);
 		}
 		for (int i = 0; i < headers.size(); i++) {
-			if ("标题".equalsIgnoreCase(headers.get(i))) {
-				widths.add(titleWidth);
-			} else if ("链接".equalsIgnoreCase(headers.get(i))) {
-				widths.add(linkWidth);
-			} else if ("日期".equalsIgnoreCase(headers.get(i))) {
-				widths.add(dateWidth);
+			if (FIXED_COLUMN_WIDTH.containsKey(headers.get(i))) {
+				widths.add(FIXED_COLUMN_WIDTH.get(headers.get(i)));
 			} else if (dynamicColCharNum > 0) {
 				int width = (leftWidth * headers.get(i).length()) / dynamicColCharNum;
-				if (width < 5) {
-					width = 5;// minimum
+				if (width < 50) {
+					width = 50;// minimum
 				}
 				widths.add(width);
 			} else {
