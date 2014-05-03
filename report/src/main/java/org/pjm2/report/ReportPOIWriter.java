@@ -773,7 +773,7 @@ public class ReportPOIWriter {
 				headers.remove(截图);
 			}
 			negotiateHeaderWidth(headers, widths);
-			logger.info(String.format(" Width array for template %s, classified %s, headers are: %, widths: %s ", template.getTemplate_type(),
+			logger.info(String.format(" Width array for template %s, classified %s, headers are: %s, widths: %s ", template.getTemplate_type(),
 			        template.getClassified(), headers.toString(), widths.toString()));
 		}
 		
