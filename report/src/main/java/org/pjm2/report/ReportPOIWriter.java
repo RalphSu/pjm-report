@@ -72,14 +72,25 @@ import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTColumns;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDocGrid;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHyperlink;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageMar;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageSz;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTbl;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblGrid;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblGridCol;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblLayoutType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblWidth;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STDocGrid;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STPageOrientation;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STSectionMark;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblLayoutType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
 import org.pjm2.report.ReportGenerator.TempalteSorter;
@@ -109,7 +120,8 @@ public class ReportPOIWriter {
 	private final Map<String, Integer> picturesMap = new HashMap<String, Integer>();
 	private final TempalteSorter sorter;
 	private static int IN_TABLE_FONT_SIZE = 8;
-	private static int table_max_width = 8200;
+	private static int TABLE_MAX_WIDTH = 8100;
+	private static int LANDSACPE_TABLE_MAX_WIDTH = 12000;
 	private static int IMAGE_MAX_WIDTH = 500;
 
     private static final Map<String, Integer> FIXED_COLUMN_WIDTH = new HashMap<String, Integer>();
@@ -140,166 +152,208 @@ public class ReportPOIWriter {
 		this.task = task;
 		this.sorter = sorter;
 	}
-
-    public boolean write(Map<ReportTemplate, List<ReportLine>> reportData) {
-        try {
-            CustomXWPFDocument doc = createDocOfStartingPages();
-            
-            Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = shuffle(reportData);
-            {
-                String key = "新闻类模板";
-                List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
-                if (data != null) {
-                    writeTemplateType(doc, key, data);
-                }
-            }
-            {
-                String key = 微博类模板;
-                List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
-                if (data != null) {
-                    // pre-process of weiboDirect and darenDirect
-                    boolean moreThanDirect = false;
-                    List<Entry<ReportTemplate, List<ReportLine>>> filteredWeibo = new ArrayList<Map.Entry<ReportTemplate,List<ReportLine>>>();
-                    for (Entry<ReportTemplate, List<ReportLine>> module : data) {
-                        if (key.equals(微博类模板) && 微博直发.equals(module.getKey().getClassified())) {
-                            // special handling for weibo direct
-                            weibo_Direct = module;
-                        } else if (key.equals(微博类模板) && 达人直发.equals(module.getKey().getClassified())) {
-                            daren_Direct = module;
-                        } else {
-                            moreThanDirect = true;
-                            filteredWeibo.add(module);
-                        }
-                    }
-                    if (moreThanDirect) {
-                        writeTemplateType(doc, key, filteredWeibo);
-                    }
-                }
-            }
-            {
-                String key = "微信类模板";
-                List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
-                if (data != null) {
-                    writeTemplateType(doc, key, data);
-                }
-            }
-            {
-                String key = "博客类模板";
-                List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
-                if (data != null) {
-                    writeTemplateType(doc, key, data);
-                }
-            }
-            {
-                String key = "论坛类模板";
-                List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
-                if (data != null) {
-                    writeTemplateType(doc, key, data);
-                }
-            }
-            {
-                String key = "汇总数据类模板";
-                List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
-                if (data != null) {
-                    writeTemplateType(doc, key, data);
-                }
-            }
-            writeImageAnaylysis(doc, reportData);
-            save(doc, "");
-            
-            // special handling for weibo_direct and daren_direct
-            {
-                if (weibo_Direct != null) {
-                    try {
-                        CustomXWPFDocument weiboDirectDoc = createDocOfStartingPages();
-                        writeTemplateType(weiboDirectDoc, 微博类模板, Arrays.asList(weibo_Direct));
-                        save(weiboDirectDoc, "_微博直发");
-                    } catch (Exception e) {
-                        logger.error("Write weibo direct document failed!", e);
-                    }
-                }
-                if (daren_Direct != null) {
-                    try {
-                        CustomXWPFDocument darenDirectDoc = createDocOfStartingPages();
-                        writeTemplateType(darenDirectDoc, 微博类模板, Arrays.asList(daren_Direct));
-                        save(darenDirectDoc, "_达人直发");
-                    } catch (Exception e) {
-                        logger.error("Write da_ren direct document failed!", e);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Fail to write the template!", e);
-            return false;
-        }
-        return true;
-    }
-
-    private CustomXWPFDocument createDocOfStartingPages() throws IOException {
-        CustomXWPFDocument doc = new CustomXWPFDocument(ReportPOIWriter.class.getResourceAsStream("/Template.docx"));
-        {
-        	XWPFParagraph p1 = doc.createParagraph();
-        	XWPFRun title = p1.createRun();
-        	p1.setAlignment(ParagraphAlignment.CENTER);
-        	p1.setVerticalAlignment(TextAlignment.TOP);
-        	p1.setStyle("Title");
-        	title.setBold(true);
-        	title.setFontSize(20);
-        	title.setText(String.format("%s",task.getProjectName()));
-        }
-        XWPFParagraph p2 = doc.createParagraph();
-        {
-        	String type = "日报";
-        	if (ReportTask.TASKTYPE.weekly.name().equalsIgnoreCase(
-        			task.getTaskType())) {
-        		type = "周报";
-        	} else if (ReportTask.TASKTYPE.summary.name().equalsIgnoreCase(
-        			task.getTaskType())) {
-        		type = "结案报告";
-        	}
-        	{
-        		XWPFRun title1 = p2.createRun();
-        		p2.setAlignment(ParagraphAlignment.CENTER);
-        		p2.setVerticalAlignment(TextAlignment.TOP);
-        		title1.setBold(false);
-        		title1.setFontSize(14);
-        		title1.setText(type);
-        	}
-
-        	{
-        		XWPFRun title2 = p2.createRun();
-        		p2.setStyle("Subtitle");
-        		p2.setAlignment(ParagraphAlignment.CENTER);
-        		p2.setVerticalAlignment(TextAlignment.TOP);
-        		title2.setBold(false);
-        		title2.setFontSize(14);
-//					title1.setFontFamily("微软雅黑");
-        		SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日");
-        		String startDate = format.format(task.getReportStartTime());
-        		if(type=="周报" || type == "结案报告"){
-        			if(task.getReportEndTime()!=null){
-        				String endDate = format.format(task.getReportEndTime());
-        				title2.setText(String.format("（%s - %s）", startDate, endDate));
-        			}else{
-        				title2.setText(String.format("(%s) ", startDate));
-        			}
-        		} else {
-        			title2.setText(String.format("(%s) ", startDate));
-        		}
-        		
-        	}
-
-        }
-
-        // insert a page break
-        {
-        	XWPFRun breakRun = p2.createRun();
-        	breakRun.addBreak(BreakType.PAGE);
-        }
-        return doc;
-    }
 	
+	@SuppressWarnings("unchecked")
+	public boolean write(Map<ReportTemplate, List<ReportLine>> reportData) {
+		try {
+			CustomXWPFDocument doc = createDocOfStartingPages();
+			
+			Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> sortedData = shuffle(reportData);
+			{
+				String key = "新闻类模板";
+				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
+				if (data != null) {
+					writeTemplateType(doc, key, data);
+				}
+			}
+			{
+				String key = 微博类模板;
+				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
+				if (data != null) {
+					// pre-process of weiboDirect and darenDirect
+					boolean moreThanDirect = false;
+					List<Entry<ReportTemplate, List<ReportLine>>> filteredWeibo = new ArrayList<Map.Entry<ReportTemplate, List<ReportLine>>>();
+					for (Entry<ReportTemplate, List<ReportLine>> module : data) {
+						if (key.equals(微博类模板) && 微博直发.equals(module.getKey().getClassified())) {
+							// special handling for weibo direct
+							weibo_Direct = module;
+						} else if (key.equals(微博类模板) && 达人直发.equals(module.getKey().getClassified())) {
+							daren_Direct = module;
+						} else {
+							moreThanDirect = true;
+							filteredWeibo.add(module);
+						}
+					}
+					if (moreThanDirect) {
+						writeTemplateType(doc, key, filteredWeibo);
+					}
+				}
+            }
+			{
+				String key = "微信类模板";
+				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
+				if (data != null) {
+					writeTemplateType(doc, key, data);
+				}
+            }
+			{
+				String key = "博客类模板";
+				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
+				if (data != null) {
+					writeTemplateType(doc, key, data);
+				}
+			}
+			{
+				String key = "论坛类模板";
+				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
+				if (data != null) {
+					writeTemplateType(doc, key, data);
+				}
+			}
+			{
+				String key = "汇总数据类模板";
+				List<Entry<ReportTemplate, List<ReportLine>>> data = sortedData.get(key);
+				if (data != null) {
+					writeTemplateType(doc, key, data);
+				}
+			}
+			writeImageAnaylysis(doc, reportData);
+			save(doc, "");
+			
+			// special handling for weibo_direct and daren_direct
+			{
+				if (weibo_Direct != null) {
+					try {
+						CustomXWPFDocument weiboDirectDoc = createDocOfStartingPages();
+						writeTemplateType(weiboDirectDoc, 微博类模板, Arrays.asList(weibo_Direct));
+						save(weiboDirectDoc, "_微博直发");
+					} catch (Exception e) {
+						logger.error("Write weibo direct document failed!", e);
+					}
+				}
+				if (daren_Direct != null) {
+					try {
+						CustomXWPFDocument darenDirectDoc = createDocOfStartingPages();
+						writeTemplateType(darenDirectDoc, 微博类模板, Arrays.asList(daren_Direct));
+						save(darenDirectDoc, "_达人直发");
+					} catch (Exception e) {
+						logger.error("Write da_ren direct document failed!", e);
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Fail to write the template!", e);
+			return false;
+		}
+		return true;
+	}
 	
+	private void writeSectionPageBreak(CustomXWPFDocument doc, boolean landscape) {
+		XWPFParagraph breakParagraph = doc.createParagraph();
+		CTP ctp = breakParagraph.getCTP();
+		CTPPr pr = ctp.addNewPPr();
+		CTSectPr secPr = pr.addNewSectPr();
+		// grid
+		CTDocGrid grid = secPr.addNewDocGrid();
+		grid.setType(STDocGrid.LINES);
+		grid.setLinePitch(BigInteger.valueOf(312));
+		// copy from template generated
+		CTColumns columns = secPr.addNewCols();
+		columns.setSpace(BigInteger.valueOf(425));
+		// set type=continuous at any time, let the word handling the mis-match of continuous
+		CTSectType type = secPr.addNewType();
+		type.setVal(STSectionMark.CONTINUOUS);
+		CTPageSz pageSz = secPr.addNewPgSz();
+		if (landscape) {
+			pageSz.setOrient(STPageOrientation.LANDSCAPE);
+			pageSz.setW(BigInteger.valueOf(16838));
+			pageSz.setH(BigInteger.valueOf(11906));
+			// page margin
+			CTPageMar mar = secPr.addNewPgMar();
+			mar.setTop(BigInteger.valueOf(1440));
+			mar.setRight(BigInteger.valueOf(1800));
+			mar.setBottom(BigInteger.valueOf(1440));
+			mar.setLeft(BigInteger.valueOf(1800));
+			mar.setHeader(BigInteger.valueOf(851));
+			mar.setFooter(BigInteger.valueOf(992));
+			mar.setGutter(BigInteger.valueOf(0));
+		} else {
+			pageSz.setW(BigInteger.valueOf(11906));
+			pageSz.setH(BigInteger.valueOf(16836));
+			// page margin
+			CTPageMar mar = secPr.addNewPgMar();
+			mar.setTop(BigInteger.valueOf(1800));
+			mar.setRight(BigInteger.valueOf(1440));
+			mar.setBottom(BigInteger.valueOf(1800));
+			mar.setLeft(BigInteger.valueOf(1440));
+			mar.setHeader(BigInteger.valueOf(851));
+			mar.setFooter(BigInteger.valueOf(992));
+			mar.setGutter(BigInteger.valueOf(0));
+		}
+	}
+
+	private CustomXWPFDocument createDocOfStartingPages() throws IOException {
+		CustomXWPFDocument doc = new CustomXWPFDocument(ReportPOIWriter.class.getResourceAsStream("/Template.docx"));
+		{
+			XWPFParagraph p1 = doc.createParagraph();
+			XWPFRun title = p1.createRun();
+			p1.setAlignment(ParagraphAlignment.CENTER);
+			p1.setVerticalAlignment(TextAlignment.TOP);
+			p1.setStyle("Title");
+			title.setBold(true);
+			title.setFontSize(20);
+			title.setText(String.format("%s", task.getProjectName()));
+		}
+		XWPFParagraph p2 = doc.createParagraph();
+		{
+			String type = "日报";
+			if (ReportTask.TASKTYPE.weekly.name().equalsIgnoreCase(task.getTaskType())) {
+				type = "周报";
+			} else if (ReportTask.TASKTYPE.summary.name().equalsIgnoreCase(task.getTaskType())) {
+				type = "结案报告";
+			}
+			{
+				XWPFRun title1 = p2.createRun();
+				p2.setAlignment(ParagraphAlignment.CENTER);
+				p2.setVerticalAlignment(TextAlignment.TOP);
+				title1.setBold(false);
+				title1.setFontSize(14);
+				title1.setText(type);
+			}
+			
+			{
+				XWPFRun title2 = p2.createRun();
+				p2.setStyle("Subtitle");
+				p2.setAlignment(ParagraphAlignment.CENTER);
+				p2.setVerticalAlignment(TextAlignment.TOP);
+				title2.setBold(false);
+				title2.setFontSize(14);
+				// title1.setFontFamily("微软雅黑");
+				SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日");
+				String startDate = format.format(task.getReportStartTime());
+				if (type == "周报" || type == "结案报告") {
+					if (task.getReportEndTime() != null) {
+						String endDate = format.format(task.getReportEndTime());
+						title2.setText(String.format("（%s - %s）", startDate, endDate));
+					} else {
+						title2.setText(String.format("(%s) ", startDate));
+					}
+				} else {
+					title2.setText(String.format("(%s) ", startDate));
+				}
+				
+			}
+			
+		}
+		
+		// insert a page break
+		{
+			XWPFRun breakRun = p2.createRun();
+			breakRun.addBreak(BreakType.PAGE);
+		}
+		return doc;
+	}
+
 	private String getReportFilePath(){
 		String prefix = System.getenv("PJM_HOME");
 		if(prefix==null)
@@ -322,12 +376,12 @@ public class ReportPOIWriter {
 		FileOutputStream out = null;
 		try {
 			String path = getReportFilePath();
-			String file = path + task.getId() + ".docx";
+			String file = path + task.getId() + suffix + ".docx";
             logger.info(" write to file path:" + file);
 			out = new FileOutputStream(file);
 			doc.write(out);
 			out.flush();
-            task.setGen_path("/reports/" + this.task.getProjectName() + "/"+task.getId() + suffix + ".docx");
+			task.setGen_path("/reports/" + this.task.getProjectName() + "/"+task.getId() + ".docx");
 		} catch (FileNotFoundException e) {
 			logger.error("Can not open doc file for write!", e);
 			throw new RuntimeException(e);
@@ -344,19 +398,20 @@ public class ReportPOIWriter {
 			}
 		}
 	}
-	
-    private void writeTemplateType(CustomXWPFDocument doc, String key, List<Entry<ReportTemplate, List<ReportLine>>> data) {
+
+	private void writeTemplateType(CustomXWPFDocument doc, String key,
+	        List<Entry<ReportTemplate, List<ReportLine>>> data) {
 		XWPFParagraph templateParagraph = doc.createParagraph();
 		templateParagraph.setStyle("Heading1");
 		XWPFRun templateRun = templateParagraph.createRun();
 		templateRun.setFontSize(20);
-		templateRun.setText(key.substring(0, key.length() - 2)); // assume last two word is "模板"
+		templateRun.setText(key.substring(0, key.length() - 2)); // assume last two word is"模板"
 
 		for (Entry<ReportTemplate, List<ReportLine>> module : data) {
-				writeModule(doc, module.getKey(), module.getValue());
+			writeModule(doc, module.getKey(), module.getValue());
 		}
 	}
-	
+
 	private Entry<ReportTemplate, List<ReportLine>> weibo_Direct;
 	private Entry<ReportTemplate, List<ReportLine>> daren_Direct;//达人直发
 	
@@ -418,7 +473,7 @@ public class ReportPOIWriter {
 			logger.error("write distroPieChartFileName ",t);
 		}
 		
-		//FIXME 4.	网络关注情况分布
+		// //4.	网络关注情况分布
 		
 		//5.	网络新闻信息每日舆情走势
 		{
@@ -771,24 +826,21 @@ public class ReportPOIWriter {
    
  
         return jfreechart;  
-    } 
-    
-	private TextTitle getTextTile(String title){
-		   // 设置标题的颜� 
-        TextTitle text = new TextTitle(title);  
-        text.setPaint(new Color(255, 255, 255));
-        text.setBackgroundPaint(new Color(0,112,192));
-        text.setExpandToFitSpace(true);
-        
-        text.setFont(new Font("", Font.BOLD, 18));
-        return text;
 	}
 
+	private TextTitle getTextTile(String title) {
+		// 设置标题的颜�
+		TextTitle text = new TextTitle(title);
+		text.setPaint(new Color(255, 255, 255));
+		text.setBackgroundPaint(new Color(0, 112, 192));
+		text.setExpandToFitSpace(true);
+		
+		text.setFont(new Font("", Font.BOLD, 18));
+		return text;
+	}
 
 	private void writeModule(CustomXWPFDocument doc, ReportTemplate template, List<ReportLine> lines) {
 		XWPFParagraph nameParagraph = doc.createParagraph();
-		nameParagraph.setAlignment(ParagraphAlignment.LEFT);
-		nameParagraph.setVerticalAlignment(TextAlignment.CENTER);
 		nameParagraph.setStyle("Heading2");
 		XWPFRun moduleName = nameParagraph.createRun();
 		moduleName.setBold(false);
@@ -796,22 +848,22 @@ public class ReportPOIWriter {
 		moduleName.setText(template.getClassified());
 		
 		// weibo direct related handling structure
-        final boolean needTopicAggregation = 微博类模板.equals(template.getTemplate_type())
-                && (微博直发.equals(template.getClassified()) || 达人直发
-                        .equals(template.getClassified()));
+		final boolean needTopicAggregation = 微博类模板.equals(template.getTemplate_type())
+		        && (微博直发.equals(template.getClassified()) || 达人直发.equals(template.getClassified()));
 		Map<String, List<ReportLine>> weiboDirectByTopic = null;
-		
+
 		logger.info(String.format(" for report tempalte %s, classified %s, size are %s", template.getTemplate_type(),
 				template.getClassified(),lines.size()));
 
 		// table
 		List<String> headers = new ArrayList<String>(template.getColumnHeaders());
 		List<Integer> widths = new ArrayList<Integer>(headers.size());
+		int tableWidth = TABLE_MAX_WIDTH;
 		{
 			// detect non table column, remove from table columns
 			if (needTopicAggregation && (headers.indexOf(所属话题) >= 0)) {
 				headers.remove(所属话题);
-				// aggregate the report line based on 所属话题 
+				// aggregate the report line based on 所属话题
 				weiboDirectByTopic = aggregateWeiboDirectByTopic(template, lines);
 			}
 			// remove image column
@@ -822,18 +874,18 @@ public class ReportPOIWriter {
 			if (headers.indexOf(截图) >= 0) {
 				headers.remove(截图);
 			}
-			negotiateHeaderWidth(headers, widths);
-			logger.info(String.format(" Width array for template %s, classified %s, headers are: %s, widths: %s ", template.getTemplate_type(),
-			        template.getClassified(), headers.toString(), widths.toString()));
+			tableWidth = negotiateHeaderWidth(headers, widths);
+			logger.info(String.format(" Width array for template %s, classified %s, headers are: %s, widths: %s ",
+			        template.getTemplate_type(), template.getClassified(), headers.toString(), widths.toString()));
 		}
 		
 		if (weiboDirectByTopic == null) {
 			XWPFParagraph labelParagraph = doc.createParagraph();
 			XWPFRun moduleNumber = labelParagraph.createRun();
 			moduleNumber.setFontSize(10);
-			writeModuleTable(doc, template, lines, moduleNumber, headers, widths);
+			writeModuleTable(doc, template, lines, moduleNumber, headers, widths, tableWidth);
 		} else {
-		    // multiple tables when the lines are aggregated
+			// multiple tables when the lines are aggregated
 			for (Entry<String, List<ReportLine>> topicEntry : weiboDirectByTopic.entrySet()) {
 				XWPFParagraph topicParagraph = doc.createParagraph();
 				topicParagraph.setStyle("Heading3");
@@ -843,14 +895,15 @@ public class ReportPOIWriter {
 				XWPFParagraph labelParagraph = doc.createParagraph();
 				XWPFRun moduleNumber = labelParagraph.createRun();
 				moduleNumber.setFontSize(10);
-				writeModuleTable(doc, template, topicEntry.getValue(), moduleNumber, headers, widths);
+				writeModuleTable(doc, template, topicEntry.getValue(), moduleNumber, headers, widths, tableWidth);
 			}
 		}
+		writeSectionPageBreak(doc, tableWidth > TABLE_MAX_WIDTH);
 	}
 
 	private void writeModuleTable(CustomXWPFDocument doc,
 			ReportTemplate template, List<ReportLine> lines,
-			XWPFRun moduleNumber, List<String> headers, List<Integer> widths) {
+			XWPFRun moduleNumber, List<String> headers, List<Integer> widths, int tableWidth) {
 
 		XWPFTable table = doc.createTable(lines.size() + 1, headers.size());
 		CTTbl ctTbl = table.getCTTbl();
@@ -870,7 +923,7 @@ public class ReportPOIWriter {
 			width = tblPr.addNewTblW();
 		}
 		width.setType(STTblWidth.DXA);
-		width.setW(BigInteger.valueOf(table_max_width));
+		width.setW(BigInteger.valueOf(tableWidth));
 
 		XWPFTableRow headRow = table.getRow(0);
 		List<XWPFTableCell> headerCells = headRow.getTableCells();
@@ -894,14 +947,14 @@ public class ReportPOIWriter {
 		} else if(splitnumber<20) {
 			splitnumber=20;
 		}
-        // set value to the table cells
+		// set value to the table cells
 		// a map from image path to URL
-        HashMap<String, String> imagePaths = new HashMap<String, String>();
-        // a map from image path to date
-        HashMap<String, String> imageDates= new HashMap<String, String>();
-        final String[] IMAGE_FIELDS = new String[] { "链接", "日期" };
-        int link_index = headers.indexOf(IMAGE_FIELDS[0]);
-        int date_index = headers.indexOf(IMAGE_FIELDS[1]);
+		HashMap<String, String> imagePaths = new HashMap<String, String>();
+		// a map from image path to date
+		HashMap<String, String> imageDates = new HashMap<String, String>();
+		final String[] IMAGE_FIELDS = new String[] { "链接", "日期" };
+		int link_index = headers.indexOf(IMAGE_FIELDS[0]);
+		int date_index = headers.indexOf(IMAGE_FIELDS[1]);
 		final int LINE_SIZE = lines.size();
 		int number_1=0;
 		int number_2=0;
@@ -1076,9 +1129,9 @@ public class ReportPOIWriter {
 		return aggregates;
 	}
 
-	private void negotiateHeaderWidth(List<String> headers, List<Integer> widths) {
-		int base = 50;
-		final int TABLE_WIDTH = table_max_width - 200; // preserve some over-head
+	private int negotiateHeaderWidth(List<String> headers, List<Integer> widths) {
+		int base = 600;
+		int tableWidth = TABLE_MAX_WIDTH; // preserve some over-head
 		int fixColNumber = 0;
 		int totalFixColWidth = 0;
 		int dynamicColCharNum = 0;
@@ -1090,7 +1143,10 @@ public class ReportPOIWriter {
 				dynamicColCharNum += headers.get(i).length();
 			}
 		}
-		int leftWidth = TABLE_WIDTH - totalFixColWidth;
+		if ((totalFixColWidth + base * (headers.size() - fixColNumber)) > TABLE_MAX_WIDTH) {
+			tableWidth = LANDSACPE_TABLE_MAX_WIDTH;
+		}
+		int leftWidth = tableWidth - totalFixColWidth;
 		if (leftWidth <= 0) {
 			logger.error("Negotiate header width encounter the sum(fix-column-width) bigger than table width! Header are : " + headers.toString() + 
 					" Predefined width maps are : " + FIXED_COLUMN_WIDTH.toString());
@@ -1113,7 +1169,8 @@ public class ReportPOIWriter {
 			}
 		}
 		
-		logger.info("negotiated header column : " + headers + " , widths are : " + widths);
+		logger.info("negotiated header column : " + headers + " , widths are : " + widths);		
+		return tableWidth;
 	}
 
 	/*
@@ -1275,7 +1332,7 @@ public class ReportPOIWriter {
             urlRun.setText(url);
         }
         graph.addRun(urlRun);
-        // FIXME : do we need date?
+        //: do we need date?
 }
 
     private Map<String, List<Entry<ReportTemplate, List<ReportLine>>>> shuffle(Map<ReportTemplate, List<ReportLine>> reportData) {
