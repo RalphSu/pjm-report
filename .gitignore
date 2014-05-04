@@ -6,3 +6,4 @@ report/*.log
 *.orig
 *~
 cron.tab
+*.py

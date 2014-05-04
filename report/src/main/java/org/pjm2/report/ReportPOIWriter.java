@@ -123,6 +123,15 @@ public class ReportPOIWriter {
 		FIXED_COLUMN_WIDTH.put("热门微博排名", 793);
 		FIXED_COLUMN_WIDTH.put("是否推荐", 566);
 	}
+	
+	private static final Set<String> NON_CENTER_ALIGN_COLUMN = new HashSet<String>();
+	static {
+	    NON_CENTER_ALIGN_COLUMN.add("标题");
+	    NON_CENTER_ALIGN_COLUMN.add("链接");
+	    NON_CENTER_ALIGN_COLUMN.add("微博内容");
+	    NON_CENTER_ALIGN_COLUMN.add("分享链接内容");
+	    NON_CENTER_ALIGN_COLUMN.add("内容");
+	}
 
 	public ReportPOIWriter(Dao dao, ReportTask task, TempalteSorter sorter) {
 		this.dao = dao;
@@ -825,20 +834,15 @@ public class ReportPOIWriter {
 		XWPFTableRow headRow = table.getRow(0);
 		List<XWPFTableCell> headerCells = headRow.getTableCells();
 		for (int i = 0; i < headers.size(); i++) {
+		    final XWPFTableCell headerCell = headerCells.get(i);
 			{
 				// center based sort
-			    List<XWPFParagraph> graphs = headerCells.get(i).getParagraphs();
-                XWPFParagraph graph = null;
-                if (graphs != null && graphs.size() >= 0) {
-                    graph = graphs.get(0);
-                } else {
-                    graph = headerCells.get(i).addParagraph();
-                }
+                XWPFParagraph graph = getOrCreateParaGraph(headerCell);
 				graph.setAlignment(ParagraphAlignment.CENTER);
 				XWPFRun run = graph.createRun();
 				run.setText(headers.get(i));
 				run.setFontSize(IN_TABLE_FONT_SIZE);
-				CTTblWidth colWidth = headerCells.get(i).getCTTc().addNewTcPr().addNewTcW();
+				CTTblWidth colWidth = headerCell.getCTTc().addNewTcPr().addNewTcW();
 				colWidth.setW(BigInteger.valueOf(widths.get(i)));
 				colWidth.setType(STTblWidth.DXA);
 			}
@@ -868,11 +872,12 @@ public class ReportPOIWriter {
 			XWPFTableRow row = table.getRow(j+1);
 			// fill one line
 			for (int i = 0; i < headers.size(); i++) {
-				Object obj = line.getColumns().get(headers.get(i));
+				final String headerName = headers.get(i);
+                final Object obj = line.getColumns().get(headerName);
 				if (obj != null) {
 					String body = obj.toString();
-					logger.info("header column name: " + headers.get(i) + " , value is: " + body);
-                    if ("链接".equalsIgnoreCase(headers.get(i))) {
+					logger.info("header column name: " + headerName + " , value is: " + body);
+                    if ("链接".equalsIgnoreCase(headerName)) {
 						String displayText = body;
 						if(body.length()>splitnumber){
 						  String part1=body.substring(0,splitnumber);
@@ -919,49 +924,46 @@ public class ReportPOIWriter {
 								row.getCell(i).setText(displayText);
 							}
 						}
-					}
-					else{
-						List<XWPFParagraph> graphs = row.getCell(i).getParagraphs();
-						XWPFRun run = null;
-						if (graphs == null || graphs.isEmpty()) {
-							run = row.getCell(i).addParagraph().createRun();
-						} else {
-							run = graphs.get(0).createRun();
-						}
+                    } else {
+                        XWPFParagraph graph = getOrCreateParaGraph(row.getCell(i));
+                        if (!NON_CENTER_ALIGN_COLUMN.contains(headerName)) {
+                            graph.setAlignment(ParagraphAlignment.CENTER);
+                        }
+						XWPFRun run = graph.createRun();
 						run.setText(body);
 						run.setFontSize(IN_TABLE_FONT_SIZE);
 					}
-					
+
 					// accumulate total for numbers column
-                    if("转发数".equalsIgnoreCase(headers.get(i))){
+                    if("转发数".equalsIgnoreCase(headerName)){
                     	try{
                     		int m = Integer.parseInt(body);
                     		number_1+=m;
                     	}catch(Exception e){
                     		logger.error("parse number error "+body+e.getMessage());
                     	}
-                    }else if ("评论数".equalsIgnoreCase(headers.get(i))){
+                    }else if ("评论数".equalsIgnoreCase(headerName)){
                     	try{
                     		int m = Integer.parseInt(body);
                     		number_2+=m;
                     	}catch(Exception e){
                     		logger.error("parse number error "+body+e.getMessage());
                     	}
-                    }else if ("粉丝数".equalsIgnoreCase(headers.get(i))){
+                    }else if ("粉丝数".equalsIgnoreCase(headerName)){
                     	try{
                     		int m = Integer.parseInt(body);
                     		number_3+=m;
                     	}catch(Exception e){
                     		logger.error("parse number error "+body+e.getMessage());
                     	}
-                    }else if ("回复数".equalsIgnoreCase(headers.get(i))){
+                    }else if ("回复数".equalsIgnoreCase(headerName)){
                     	try{
                     		int m = Integer.parseInt(body);
                     		number_4+=m;
                     	}catch(Exception e){
                     		logger.error("parse number error "+body+e.getMessage());
                     	}
-                    } else if ("点击数".equalsIgnoreCase(headers.get(i))) {
+                    } else if ("点击数".equalsIgnoreCase(headerName)) {
                     	try {
                     		int m = Integer.parseInt(body);
                     		number_5 +=m;
@@ -974,7 +976,7 @@ public class ReportPOIWriter {
 				} else {
 					row.getCell(i).setText("");
 				}
-				logger.info("header column name: " + headers.get(i) + " , width is: " + widths.get(i));
+				logger.info("header column name: " + headerName + " , width is: " + widths.get(i));
 				CTTblWidth colWidth = row.getCell(i).getCTTc().addNewTcPr().addNewTcW();
 				colWidth.setW(BigInteger.valueOf(widths.get(i)));
 				colWidth.setType(STTblWidth.DXA);
@@ -1005,6 +1007,17 @@ public class ReportPOIWriter {
 				template.getClassified(), StringUtils.join(imagePaths, "\n")));
 		writeModuleImage(doc, imagePaths, imageDates);
 	}
+
+    private XWPFParagraph getOrCreateParaGraph(final XWPFTableCell cell) {
+        List<XWPFParagraph> graphs = cell.getParagraphs();
+        XWPFParagraph graph = null;
+        if (graphs != null && graphs.size() >= 0) {
+            graph = graphs.get(0);
+        } else {
+            graph = cell.addParagraph();
+        }
+        return graph;
+    }
 
 	private Map<String, List<ReportLine>> aggregateWeiboDirectByTopic(ReportTemplate template, List<ReportLine> lines) {
 		Map<String, List<ReportLine>> aggregates = new HashMap<String, List<ReportLine>>();
