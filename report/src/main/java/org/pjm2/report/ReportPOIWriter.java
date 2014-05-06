@@ -121,7 +121,7 @@ public class ReportPOIWriter {
 	private final TempalteSorter sorter;
 	private static int IN_TABLE_FONT_SIZE = 8;
 	private static int TABLE_MAX_WIDTH = 8100;
-	private static int LANDSACPE_TABLE_MAX_WIDTH = 12000;
+	private static int LANDSACPE_TABLE_MAX_WIDTH = 13000;
 	private static int IMAGE_MAX_WIDTH = 500;
 
     private static final Map<String, Integer> FIXED_COLUMN_WIDTH = new HashMap<String, Integer>();
@@ -129,11 +129,11 @@ public class ReportPOIWriter {
         FIXED_COLUMN_WIDTH.put("标题", 1428);
         FIXED_COLUMN_WIDTH.put("日期", 1065);
         FIXED_COLUMN_WIDTH.put("链接", 2131);
-        FIXED_COLUMN_WIDTH.put("微博内容", 1491);
+        FIXED_COLUMN_WIDTH.put("微博内容", 2131);
         FIXED_COLUMN_WIDTH.put("分享链接内容", 737);
         FIXED_COLUMN_WIDTH.put("主题", 1360);
         FIXED_COLUMN_WIDTH.put("位置", 1054);
-        FIXED_COLUMN_WIDTH.put("内容", 1491);
+        FIXED_COLUMN_WIDTH.put("内容", 2131);
         FIXED_COLUMN_WIDTH.put("热门微博排名", 793);
         FIXED_COLUMN_WIDTH.put("是否推荐", 566);
     }
@@ -1130,17 +1130,22 @@ public class ReportPOIWriter {
 	}
 
 	private int negotiateHeaderWidth(List<String> headers, List<Integer> widths) {
-		int base = 600;
+		int base = 1060;// caoliu!!
 		int tableWidth = TABLE_MAX_WIDTH; // preserve some over-head
 		int fixColNumber = 0;
 		int totalFixColWidth = 0;
 		int dynamicColCharNum = 0;
+		int minDynamicColCharNum = -1;
 		for (int i = 0; i < headers.size(); i++) {
 			if (FIXED_COLUMN_WIDTH.containsKey(headers.get(i))) {
 				fixColNumber++;
 				totalFixColWidth += FIXED_COLUMN_WIDTH.get(headers.get(i));
 			} else {
-				dynamicColCharNum += headers.get(i).length();
+				int headerWidth = headers.get(i).length();
+                dynamicColCharNum += headerWidth;
+                if (minDynamicColCharNum < 0 || minDynamicColCharNum > headerWidth) {
+                    minDynamicColCharNum = headerWidth;
+                }
 			}
 		}
 		if ((totalFixColWidth + base * (headers.size() - fixColNumber)) > TABLE_MAX_WIDTH) {
