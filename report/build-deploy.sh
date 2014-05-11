@@ -16,6 +16,8 @@ ln -s $sh ~/start.sh
 eof=`rm ~/report.jar`
 ln -s $jar ~/report.jar
 
+cp host_daemon.sh ~/host_daemon.sh
+
 sh=~/start.sh
 sh=${sh//\//\\/}
 echo $sh
