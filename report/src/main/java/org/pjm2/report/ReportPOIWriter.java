@@ -106,6 +106,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class ReportPOIWriter {
+	private static final String 点赞 = "点赞";
 	private static final String 截图 = "截图";
 	private static final String 图片 = "图片";
 	private static final String 所属话题 = "所属话题";
@@ -863,6 +864,9 @@ public class ReportPOIWriter {
 			// detect non table column, remove from table columns
 			if (needTopicAggregation && (headers.indexOf(所属话题) >= 0)) {
 				headers.remove(所属话题);
+				headers.remove("平台");
+				headers.remove(点赞);
+
 				// aggregate the report line based on 所属话题
 				weiboDirectByTopic = aggregateWeiboDirectByTopic(template, lines);
 			}
@@ -961,6 +965,7 @@ public class ReportPOIWriter {
 		int number_3=0;
 		int number_4=0;
 		int number_5 = 0; // click number
+		int number_6=0;
 		for (int j = 0; j < LINE_SIZE; j++) {
 			ReportLine line = lines.get(j);
 			XWPFTableRow row = table.getRow(j+1);
@@ -1075,7 +1080,17 @@ public class ReportPOIWriter {
 				colWidth.setW(BigInteger.valueOf(widths.get(i)));
 				colWidth.setType(STTblWidth.DXA);
 			}
-
+			{
+				final Object obj = line.getColumns().get(点赞);
+				if (obj != null) {
+					try {
+						int m = Integer.parseInt(obj.toString());
+						number_6 += m;
+					} catch (Exception e) {
+						logger.error("parse number error " + obj, e);
+					}
+				}
+			}
 			addImagePaths(imagePaths, imageDates, template, IMAGE_FIELDS, link_index, date_index, line);
 			
 		}
@@ -1094,6 +1109,9 @@ public class ReportPOIWriter {
 		}
 		if (number_5>0) {
 			msg+=";点击数:"+number_5;
+		}
+		if (number_6 > 0) {
+			msg += ";点赞数:" + number_6;
 		}
 		moduleNumber.setText(msg);
 		// picture
